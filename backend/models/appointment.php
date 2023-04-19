@@ -9,10 +9,10 @@ class Appointment
 
     function __construct($id, $title, $location, $date, $expiry_date)
     {
-        $this -> id = $id;
-        $this -> title = $title;
-        $this -> location = $location;
-        $this -> date = $date;
-        $this -> expiry_date = $expiry_date;
+        $this->id = $id;
+        $this->title = $title;
+        $this->location = $location;
+        $this->date = $date;
+        $this->expiry_date = $expiry_date;
     }
 }
