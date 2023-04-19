@@ -4,22 +4,17 @@ include("db/dataHandler.php");
 class SimpleLogic
 {
     private $dh;
+
     function __construct()
     {
         $this->dh = new DataHandler();
     }
 
-    function handleRequest($method, $param)
+    function handleRequest($method)
     {
         switch ($method) {
-            case "queryPersons":
-                $res = $this->dh->queryPersons();
-                break;
-            case "queryPersonById":
-                $res = $this->dh->queryPersonById($param);
-                break;
-            case "queryPersonByName":
-                $res = $this->dh->queryPersonByName($param);
+            case "queryAppointments":
+                $res = $this->dh->queryAppointments();
                 break;
             default:
                 $res = null;

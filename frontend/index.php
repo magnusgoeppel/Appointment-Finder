@@ -10,7 +10,12 @@
 </head>
 
 <body>
-    <!-- Hier kommt der Inhalt der Webseite -->
+    <div class="container">
+        <h1 class="mt-4 mb-4">Appointment Finder</h1>
+        <div class="appointments-list">
+            <!-- Die Liste der Appointments wird hier dynamisch von script.ts eingefügt -->
+        </div>
+    </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha2/dist/js/bootstrap.bundle.min.js" integrity="sha384-qKXV1j0HvMUeCBQ+QVp7JcfGl760yU08IQ+GpUo5hlbpg51QRiuqHAJz8+BrxE/N" crossorigin="anonymous"></script>
 </body>
 </html>

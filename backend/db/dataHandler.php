@@ -1,43 +1,27 @@
 <?php
-include("./models/person.php");
+include("./models/appointment.php");
+
 class DataHandler
 {
-    public function queryPersons()
+    // Fügen Sie hier Ihren Datenbankverbindungscode ein, z. B.
+    // private $conn;
+
+    public function __construct()
     {
-        $res =  $this->getDemoData();
-        return $res;
+        // Verbinden Sie sich hier mit Ihrer Datenbank, z. B.
+        // $this->conn = new mysqli("localhost", "bif2webscriptinguser", "bif2021", "appointment_finder");
     }
 
-    public function queryPersonById($id)
+    public function queryAppointments()
     {
-        $result = array();
-        foreach ($this->queryPersons() as $val) {
-            if ($val[0]->id == $id) {
-                array_push($result, $val);
-            }
-        }
-        return $result;
-    }
+        // Fügen Sie hier Ihren Datenbankabfragecode ein, z. B.
+        // $result = $this->conn->query("SELECT * FROM appointments");
+        // return $result->fetch_all(MYSQLI_ASSOC);
 
-    public function queryPersonByName($name)
-    {
-        $result = array();
-        foreach ($this->queryPersons() as $val) {
-            if ($val[0]->lastname == $name) {
-                array_push($result, $val);
-            }
-        }
-        return $result;
-    }
-
-    private static function getDemoData()
-    {
-        $demodata = [
-            [new Person(1, "Jane", "Doe", "jane.doe@fhtw.at", 1234567, "Central IT")],
-            [new Person(2, "John", "Doe", "john.doe@fhtw.at", 34345654, "Help Desk")],
-            [new Person(3, "baby", "Doe", "baby.doe@fhtw.at", 54545455, "Management")],
-            [new Person(4, "Mike", "Smith", "mike.smith@fhtw.at", 343477778, "Faculty")],
+        // Verwenden Sie vorerst Demo-Daten:
+        return [ new Appointment(1, "Meeting", "Conference Room", "2023-04-20", "2023-04-19"),
+                new Appointment(2, "Workshop", "Training Room", "2023-04-25", "2023-04-23"),
+                new Appointment(3, "Team Lunch", "Cafeteria", "2023-04-26", "2023-04-24"),
         ];
-        return $demodata;
     }
 }
