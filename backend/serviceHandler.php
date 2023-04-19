@@ -1,5 +1,5 @@
 <?php
-include("businesslogic/simpleLogic.php");
+include("buisnesslogic/simpleLogic.php");
 
 header("Content-Type: application/json");
 
