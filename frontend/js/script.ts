@@ -14,7 +14,9 @@ function loadAppointments()
         {
             displayAppointments(data);
         },
-        error: function (jqXHR, textStatus, errorThrown) {
+        error: function (jqXHR, textStatus, errorThrown)
+        {
+            //FEHLER
             console.error('Error: ' + textStatus, errorThrown);
             let html = '<div class="alert alert-danger" role="alert">';
             html += 'Fehler beim Laden der Termine. Bitte versuchen Sie es später erneut.';
