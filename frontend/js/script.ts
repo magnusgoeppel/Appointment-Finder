@@ -1,35 +1,44 @@
-document.addEventListener("DOMContentLoaded", function () {
-    fetchAppointments();
+$(document).ready(function ()
+{
+    loadAppointments();
 });
 
-interface Appointment
+function loadAppointments()
 {
-    title: string;
-    location: string;
-    date: string;
-    expiry_date: string;
+    $.ajax({
+        url: '../../backend/serviceHandler.php',
+        method: 'GET',
+        data: { method: 'queryAppointments' },
+        dataType: 'json',
+        success: function (data)
+        {
+            displayAppointments(data);
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+            console.error('Error: ' + textStatus, errorThrown);
+            let html = '<div class="alert alert-danger" role="alert">';
+            html += 'Fehler beim Laden der Termine. Bitte versuchen Sie es später erneut.';
+            html += '</div>';
+            $('.appointments-list').html(html);
+        }
+    });
 }
 
-function fetchAppointments(): void {
-    fetch("backend/serviceHandler.php?method=queryAppointments")
-        .then(response => response.json())
-        .then((data: Appointment[]) => {
-            let appointmentsList = document.querySelector(".appointments-list");
+function displayAppointments(appointments: any[]) {
+    let html = '<table class="table table-striped">';
+    html += '<thead><tr><th>Titel</th><th>Ort</th><th>Datum</th><th>Ablaufdatum des Votings</th><th>Status</th></tr></thead>';
+    html += '<tbody>';
 
-            data.forEach(function (appointment: Appointment) {
-                let expiredClass = new Date(appointment.expiry_date) < new Date() ? "text-danger" : "";
-                let appointmentElement = `
-                <div class="card ${expiredClass} mb-3">
-                    <div class="card-body">
-                        <h5 class="card-title">${appointment.title}</h5>
-                        <h6 class="card-subtitle mb-2">${appointment.location}</h6>
-                        <p class="card-text">Date: ${appointment.date}</p>
-                        <p class="card-text">Expiry Date: ${appointment.expiry_date}</p>
-                    </div>
-                </div>
-                `;
+    appointments.forEach(appointment => {
+        html += '<tr>';
+        html += `<td>${appointment.title}</td>`;
+        html += `<td>${appointment.location}</td>`;
+        html += `<td>${appointment.date}</td>`;
+        html += `<td>${appointment.expirationDate}</td>`;
+        html += `<td>${appointment.status}</td>`;
+        html += '</tr>';
+    });
 
-                appointmentsList.insertAdjacentHTML('beforeend', appointmentElement);
-            });
-        });
+    html += '</tbody></table>';
+    $('.appointments-list').html(html);
 }
