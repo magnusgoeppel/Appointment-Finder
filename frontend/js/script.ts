@@ -32,8 +32,7 @@ function displayAppointments(appointments : any[])
     // Konvertiere das Array von Arrays in ein flaches Array
     const flatAppointments: any[] = [].concat(appointments);
 
-    let output = `
-        <table class="table table-striped">
+    let output = `<table class="table table-striped">
             <thead>
                 <tr>
                     <th>Details</th>
@@ -45,9 +44,7 @@ function displayAppointments(appointments : any[])
                     <th>Status</th>
                 </tr>
             </thead>
-            <tbody>
-    `;
-
+    <tbody>`;
     for (const appointment of flatAppointments)
     {
         let status = "Offen";
@@ -58,38 +55,40 @@ function displayAppointments(appointments : any[])
         {
             status = "Abgelaufen";
         }
-        output += `<tr class="appointment-row" data-appointment-id="${appointment.id}">
-                      <td><button class="btn btn-primary toggle-details-btn" data-appointment-id="${appointment.id}">Details</button></td>
-                      <td>${appointment.id}</td>
-                      <td>${appointment.title}</td>
-                      <td>${appointment.location}</td>
-                      <td>${appointment.date}</td>
-                      <td>${appointment.expiry_date}</td>
-                      <td>${status}</td>
-                  </tr>
-                  
-                  <tr class="details-row" data-appointment-id="${appointment.id}" style="display: none;">
-                      <td colspan="6">
-                          <div class="appointment-details"></div>
-                      </td>
-                  </tr>`;
+        output += `
+            <tr class="appointment-row" data-appointment-id="${appointment.id}">
+                <td><img class="toggle-details" data-appointment-id="${appointment.id}" src="img/expand.png" alt="Toggle details"></td>
+                <td>${appointment.id}</td>
+                <td>${appointment.title}</td>
+                <td>${appointment.location}</td>
+                <td>${appointment.date}</td>
+                <td>${appointment.expiry_date}</td>
+                <td>${status}</td>
+            </tr>
+            <tr class="details-row" data-appointment-id="${appointment.id}" style="display: none;">
+                <td colspan="7">
+                    <div class="appointment-details"></div>
+                </td>
+            </tr>
+        `;
     }
 
-    output += "</tbody></table>";
+    output += "</tbody>" +
+                "</table>";
     $(".appointments-list").html(output);
 
-    $('.toggle-details-btn').click(function (e)
-    {
-        e.stopPropagation(); // Verhindert das Auslösen des Klick-Events auf die Tabellenzeile
+    // Event Listener zum Klicken auf das Bild hinzufügen
+    $('.toggle-details').click(function () {
         const appointmentId = $(this).data('appointment-id');
         const detailsRow = $(`.details-row[data-appointment-id="${appointmentId}"]`);
-        //const detailsDiv = detailsRow.find('.appointment-details');
+        const detailsDiv = detailsRow.find('.appointment-details');
 
-        if (detailsRow.is(':visible'))
-        {
+        if (detailsRow.is(':visible')) {
             detailsRow.hide();
+            $(this).attr('src', 'img/expand.png'); // Ändere das Bild zu "expand.png", wenn die Detailansicht geschlossen ist
         } else {
             detailsRow.show();
+            $(this).attr('src', 'img/collapse.png'); // Ändere das Bild zu "collapse.png", wenn die Detailansicht geöffnet ist
             loadAppointmentDetails(appointmentId);
         }
     });
@@ -120,12 +119,15 @@ function loadAppointmentDetails(appointmentId)
 function updateAppointmentDetails(appointmentId, details)
 {
     let output = `
-        <h4>Terminoptionen</h4>
-        <ul class="list-group">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">Terminoptionen</h4>
+                <ul class="list-group">
     `;
 
     for (const selectableDate of details.selectable_dates)
     {
+
         output += `
             <li class="list-group-item">
                 ${selectableDate.date}
@@ -134,25 +136,32 @@ function updateAppointmentDetails(appointmentId, details)
         `;
     }
 
+
     output += '</ul><br/>';
 
     output += `
-        <h4>Bisherige Abstimmungen und Kommentare</h4>
-        <ul class="list-group">
+                <h4 class="card-title">Bisherige Abstimmungen und Kommentare</h4>
+                <ul class="list-group">
     `;
 
-    for (const userVote of details.user_votes) {
+    for (const userVote of details.user_votes)
+    {
         output += `
-            <li class="list-group-item">
-                <strong>${userVote.username}:</strong> ${userVote.comment}
-                <br>
-                <small>Gewähltes Datum: ${userVote.selected_date}</small>
-            </li>
-        `;
+        <li class="list-group-item">
+            <strong>${userVote.username}:</strong> <span class="user-comment">${userVote.comment}</span>
+            <br>
+            <small>Gewähltes Datum: ${userVote.selected_date}</small>
+        </li>
+    `;
     }
 
-    output += '</ul>';
 
-    $(`#details-${appointmentId} .details-container`).html(output);
+    output += `
+                </ul>
+            </div>
+        </div>
+    `;
+
+    $(`.details-row[data-appointment-id="${appointmentId}"] .appointment-details`).html(output);
 }
 
