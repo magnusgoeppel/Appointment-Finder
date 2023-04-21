@@ -5,16 +5,16 @@ class DataHandler
 {
     public function queryAppointments()
     {
-        return /*$this -> getDemoData() && */$this -> getAppointmentData();
+        return /*$this -> getDemoData() &&*/ $this -> getAppointmentData();
     }
 
     private function getAppointmentData()
     {
         $db = new DB();
         $result = $db->query("SELECT * FROM appointments");
-        $db->close();
 
-        if (!$result) {
+        if (!$result)
+        {
             return false;
         }
 
@@ -24,8 +24,10 @@ class DataHandler
             $appointments[] = $appointment;
         }
 
+        // Rückgabe eines flachen Arrays
         return $appointments;
     }
+
 
 
     private function getDemoData()

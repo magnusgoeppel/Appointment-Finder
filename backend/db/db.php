@@ -1,18 +1,22 @@
 <?php
-
-
 class DB
 {
     private $host = "localhost";
     private $user = "bif2webscriptinguser";
     private $password = "bif2023";
-    private $database = "appointment_finder";
+    private $database = "appointmentfinder";
     private $connection;
 
     public function __construct()
     {
         $this->connect();
     }
+
+    public function checkDBConnection()
+    {
+        return $this->connection->ping();
+    }
+
 
     private function connect()
     {
@@ -24,7 +28,7 @@ class DB
         }
         else
         {
-            //
+           
         }
     }
 
