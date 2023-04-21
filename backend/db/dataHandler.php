@@ -19,12 +19,56 @@ class DataHandler
         }
 
         $appointments = [];
-        foreach ($result as $row) {
+        foreach ($result as $row)
+        {
             $appointment = new Appointment($row['id'], $row['title'], $row['location'], $row['date'], $row['expiry_date']);
             $appointments[] = $appointment;
         }
-
-        // Rückgabe eines flachen Arrays
         return $appointments;
     }
+
+    public function queryAppointmentDetails($appointment_id)
+    {
+        return $this->getAppointmentDetails($appointment_id);
+    }
+
+    public function getAppointmentDetails($appointment_id)
+    {
+        $selectable_dates = $this->getSelectableDates($appointment_id);
+        $user_votes = $this->getUserVotes($appointment_id);
+
+        return [
+            'selectable_dates' => $selectable_dates,
+            'user_votes' => $user_votes,
+        ];
+    }
+
+    private function getSelectableDates($appointment_id)
+    {
+        $db = new DB();
+        $appointment_id = $db->escape($appointment_id);
+        $result = $db->query("SELECT id, date, (SELECT COUNT(*) FROM user_votes 
+                                   WHERE fk_selected_date_id = selectable_dates.id) as votes FROM selectable_dates WHERE fk_appointment_id = '$appointment_id'");
+
+        if (!$result)
+        {
+            return false;
+        }
+        return $result;
+    }
+
+    private function getUserVotes($appointment_id)
+    {
+        $db = new DB();
+        $appointment_id = $db->escape($appointment_id);
+        $result = $db->query("SELECT uv.username, uv.comment, sd.date as selected_date FROM user_votes uv 
+                                   JOIN selectable_dates sd ON uv.fk_selected_date_id = sd.id WHERE uv.fk_appointment_id = '$appointment_id'");
+
+        if (!$result)
+        {
+            return false;
+        }
+        return $result;
+    }
+
 }

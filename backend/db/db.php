@@ -26,10 +26,6 @@ class DB
         {
             die("Verbindung fehlgeschlagen: " . $this->connection->connect_error);
         }
-        else
-        {
-           
-        }
     }
 
     public function query($sql)
