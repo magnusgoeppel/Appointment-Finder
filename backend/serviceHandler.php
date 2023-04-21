@@ -13,13 +13,16 @@ $result = $logic->handleRequest($method, $param);
 if ($result == null)
 {
     response("GET", 400, null);
-} else {
+}
+else
+{
     response("GET", 200, $result);
 }
 
 function response($method, $httpStatus, $data)
 {
     header('Content-Type: application/json');
+
     switch ($method)
     {
         case "GET":
@@ -29,6 +32,7 @@ function response($method, $httpStatus, $data)
         default:
             http_response_code(405);
             echo ("Method not supported yet!");
+            break;
     }
 }
 

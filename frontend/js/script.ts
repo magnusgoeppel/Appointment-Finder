@@ -1,4 +1,4 @@
-$(document).ready(function ()
+$(document).ready(function()
 {
     loadAppointments();
 });
@@ -17,7 +17,7 @@ function loadAppointments()
         error: function (jqXHR, textStatus, errorThrown)
         {
             //FEHLER
-            console.error('Error: ' + textStatus, errorThrown);
+            console.error('Error: ' + jqXHR, textStatus, errorThrown);
             let html = '<div class="alert alert-danger" role="alert">';
             html += 'Fehler beim Laden der Termine. Bitte versuchen Sie es später erneut.';
             html += '</div>';
@@ -26,21 +26,47 @@ function loadAppointments()
     });
 }
 
-function displayAppointments(appointments: any[]) {
-    let html = '<table class="table table-striped">';
-    html += '<thead><tr><th>Titel</th><th>Ort</th><th>Datum</th><th>Ablaufdatum des Votings</th><th>Status</th></tr></thead>';
-    html += '<tbody>';
+function displayAppointments(appointments: any[])
+{
+    let output = `
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Titel</th>
+                    <th>Ort</th>
+                    <th>Datum</th>
+                    <th>Ablaufdatum des Votings</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
 
-    appointments.forEach(appointment => {
-        html += '<tr>';
-        html += `<td>${appointment.title}</td>`;
-        html += `<td>${appointment.location}</td>`;
-        html += `<td>${appointment.date}</td>`;
-        html += `<td>${appointment.expirationDate}</td>`;
-        html += `<td>${appointment.status}</td>`;
-        html += '</tr>';
-    });
+    for (const appointmentGroup of appointments)
+    {
+        for (const appointment of appointmentGroup)
+        {
+            let status = "Offen";
+            const currentDate = new Date();
+            const expiryDate = new Date(appointment.expiry_date);
 
-    html += '</tbody></table>';
-    $('.appointments-list').html(html);
+            if (currentDate > expiryDate)
+            {
+                status = "Abgelaufen";
+            }
+
+            output += `
+                <tr>
+                    <td>${appointment.title}</td>
+                    <td>${appointment.location}</td>
+                    <td>${appointment.date}</td>
+                    <td>${appointment.expiry_date}</td>
+                    <td>${status}</td>
+                </tr>
+            `;
+        }
+    }
+    output += "</tbody></table>";
+    $(".appointments-list").html(output);
 }
+
