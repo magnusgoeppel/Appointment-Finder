@@ -71,4 +71,19 @@ class DataHandler
         return $result;
     }
 
+    public function saveUserVote($appointment_id, $username, $selected_date_id, $comment) {
+        $db = new DB();
+        $appointment_id = $db->escape($appointment_id);
+        $username = $db->escape($username);
+        $selected_date_id = $db->escape($selected_date_id);
+        $comment = $db->escape($comment);
+
+        $query = "INSERT INTO user_votes (fk_appointment_id, username, fk_selected_date_id, comment)
+              VALUES ('$appointment_id', '$username', '$selected_date_id', '$comment')";
+
+        $result = $db->query($query);
+
+        return $result;
+    }
+
 }

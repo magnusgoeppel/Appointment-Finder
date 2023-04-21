@@ -26,4 +26,17 @@ class SimpleLogic
         }
         return $res;
     }
+
+    public function submitVote($appointmentId, $username, $selectedDateId, $comment)
+    {
+        $dataHandler = new DataHandler();
+        $result = $dataHandler->submitVote($appointmentId, $username, $selectedDateId, $comment);
+
+        if ($result) {
+            return ['success' => true];
+        } else {
+            return ['success' => false];
+        }
+    }
+
 }

@@ -81,21 +81,38 @@ function displayAppointments(appointments : any[])
     $('.toggle-details').click(function () {
         const appointmentId = $(this).data('appointment-id');
         const detailsRow = $(`.details-row[data-appointment-id="${appointmentId}"]`);
-        const detailsDiv = detailsRow.find('.appointment-details');
 
-        if (detailsRow.is(':visible')) {
+        if (detailsRow.is(':visible'))
+        {
             detailsRow.hide();
             $(this).attr('src', 'img/expand.png'); // Ändere das Bild zu "expand.png", wenn die Detailansicht geschlossen ist
-        } else {
+        }
+        else
+        {
             detailsRow.show();
             $(this).attr('src', 'img/collapse.png'); // Ändere das Bild zu "collapse.png", wenn die Detailansicht geöffnet ist
             loadAppointmentDetails(appointmentId);
         }
     });
+    // Event Listener zum Absenden des Formulars hinzufügen
+    $('.appointment-form').submit(function (event) {
+        event.preventDefault();
+
+        const appointmentId = $(this).data('appointment-id');
+        const username = $(`#username-${appointmentId}`).val();
+        const selectedDate = $(`#date-${appointmentId}`).val();
+        const comment = $(`#comment-${appointmentId}`).val();
+
+        submitVote(appointmentId, username, selectedDate, comment);
+    });
 }
 
 function loadAppointmentDetails(appointmentId)
 {
+    const detailsRow = $(`.details-row[data-appointment-id="${appointmentId}"]`);
+    const status = detailsRow.prev('.appointment-row').find('td:last-child').text();
+
+
     $.ajax({
         url: '../../backend/serviceHandler.php',
         method: 'GET',
@@ -103,7 +120,7 @@ function loadAppointmentDetails(appointmentId)
         dataType: 'json',
         success: function (data)
         {
-            updateAppointmentDetails(appointmentId, data);
+            updateAppointmentDetails(appointmentId, data, status);
         },
         error: function (jqXHR, textStatus, errorThrown)
         {
@@ -116,7 +133,7 @@ function loadAppointmentDetails(appointmentId)
     });
 }
 
-function updateAppointmentDetails(appointmentId, details)
+function updateAppointmentDetails(appointmentId, details, status)
 {
     let output = `
         <div class="card">
@@ -136,7 +153,6 @@ function updateAppointmentDetails(appointmentId, details)
         `;
     }
 
-
     output += '</ul><br/>';
 
     output += `
@@ -155,13 +171,89 @@ function updateAppointmentDetails(appointmentId, details)
     `;
     }
 
+    output += `</ul>`;
 
     output += `
-                </ul>
-            </div>
+    <form class="appointment-form" data-appointment-id="${appointmentId}">
+        <h4 class="card-title mt-3">Abstimmen</h4>
+        <div class="mb-3">
+            <label for="username-${appointmentId}" class="form-label">Name</label>
+            <input type="text" class="form-control" id="username-${appointmentId}" name="username" required>
         </div>
-    `;
+        <div class="mb-3">
+            <label for="date-${appointmentId}" class="form-label">Terminoptionen</label>
+            <select class="form-control" id="date-${appointmentId}" name="date" required>`;
+
+    for (const selectableDate of details.selectable_dates)
+    {
+        output += `<option value="${selectableDate.date}">${selectableDate.date}</option>`;
+    }
+
+    output += `
+            </select>
+        </div>
+        <div class="mb-3">
+            <label for="comment-${appointmentId}" class="form-label">Kommentar</label>
+            <textarea class="form-control" id="comment-${appointmentId}" name="comment" rows="3"></textarea>
+        </div>`;
+
+    output += `</form>`;
+
+    if (status === "Abgelaufen")
+    {
+        output += `<div class="alert alert-warning" role="alert">Dieser Termin ist abgelaufen. Abstimmung nicht mehr möglich.</div>`;
+    } else {
+        output += `<button type="submit" class="btn btn-primary">Abstimmen</button>`;
+    }
+
+    output += `     </div>
+        </div></form>`;
 
     $(`.details-row[data-appointment-id="${appointmentId}"] .appointment-details`).html(output);
+}
+
+function submitVote(appointmentId, username, selectedDaten, comment) {
+    $.ajax({
+        url: '../../backend/serviceHandler.php',
+        method: 'POST',
+        data: {
+            method: 'submitVote',
+            param: {
+                appointmentId: appointmentId,
+                username: username,
+                selectedDate: selectedDaten,
+                comment: comment
+            }
+        },
+        dataType: 'json',
+        success: function (data) {
+            if (data.success) {
+                // Zeige Erfolgsmeldung an
+                let html = '<div class="alert alert-success" role="alert">';
+                html += 'Ihre Abstimmung wurde erfolgreich gespeichert.';
+                html += '</div>';
+                $(`.details-row[data-appointment-id="${appointmentId}"] .appointment-details`).prepend(html);
+
+                // Aktualisiere die Detailansicht
+                loadAppointmentDetails(appointmentId);
+            }
+            else
+            {
+                // Zeige Fehlermeldung an
+                let html = '<div class="alert alert-danger" role="alert">';
+                html += 'Fehler beim Speichern Ihrer Abstimmung. Bitte versuchen Sie es später erneut.';
+                html += '</div>';
+                $(`.details-row[data-appointment-id="${appointmentId}"] .appointment-details`).prepend(html);
+            }
+        },
+        error: function (jqXHR, textStatus, errorThrown)
+        {
+            console.error('Error: ' + jqXHR, textStatus, errorThrown);
+            let html = '<div class="alert alert-danger" role="alert">';
+            html += 'Fehler beim Speichern Ihrer Abstimmung. Bitte versuchen Sie es später erneut.';
+            html += '</div>';
+            $(`.details-row[data-appointment-id="${appointmentId}"] .appointment-details`).prepend(html);
+        }
+    });
 }
 
