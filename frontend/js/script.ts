@@ -27,7 +27,6 @@ function loadAppointments()
 
 function displayAppointments(appointments : any[])
 {
-    console.log(appointments);
 
     // Konvertiere das Array von Arrays in ein flaches Array
     const flatAppointments: any[] = [].concat(appointments);
@@ -94,17 +93,6 @@ function displayAppointments(appointments : any[])
             loadAppointmentDetails(appointmentId);
         }
     });
-    // Event Listener zum Absenden des Formulars hinzufügen
-    $('.appointment-form').submit(function (event) {
-        event.preventDefault();
-
-        const appointmentId = $(this).data('appointment-id');
-        const username = $(`#username-${appointmentId}`).val();
-        const selectedDate = $(`#date-${appointmentId}`).val();
-        const comment = $(`#comment-${appointmentId}`).val();
-
-        submitVote(appointmentId, username, selectedDate, comment);
-    });
 }
 
 function loadAppointmentDetails(appointmentId)
@@ -162,9 +150,11 @@ function updateAppointmentDetails(appointmentId, details, status)
 
     for (const userVote of details.user_votes)
     {
+        const hasComment = userVote.comment.trim() !== '';
+
         output += `
         <li class="list-group-item">
-            <strong>${userVote.username}:</strong> <span class="user-comment">${userVote.comment}</span>
+            <strong>${userVote.username}${hasComment ? ' :' : ''}</strong> <span class="user-comment">${userVote.comment}</span>
             <br>
             <small>Gewähltes Datum: ${userVote.selected_date}</small>
         </li>
@@ -174,8 +164,11 @@ function updateAppointmentDetails(appointmentId, details, status)
     output += `</ul>`;
 
     output += `
+
     <form class="appointment-form" data-appointment-id="${appointmentId}">
         <h4 class="card-title mt-3">Abstimmen</h4>
+        <div class="card">
+            <div class="card-body">
         <div class="mb-3">
             <label for="username-${appointmentId}" class="form-label">Name</label>
             <input type="text" class="form-control" id="username-${appointmentId}" name="username" required>
@@ -194,7 +187,7 @@ function updateAppointmentDetails(appointmentId, details, status)
         </div>
         <div class="mb-3">
             <label for="comment-${appointmentId}" class="form-label">Kommentar</label>
-            <textarea class="form-control" id="comment-${appointmentId}" name="comment" rows="3"></textarea>
+            <textarea class="form-control" id="comment-${appointmentId}" name="comment" rows="3" placeholder="optional"></textarea>
         </div>`;
 
     output += `</form>`;
@@ -203,13 +196,37 @@ function updateAppointmentDetails(appointmentId, details, status)
     {
         output += `<div class="alert alert-warning" role="alert">Dieser Termin ist abgelaufen. Abstimmung nicht mehr möglich.</div>`;
     } else {
-        output += `<button type="submit" class="btn btn-primary">Abstimmen</button>`;
+        output += `<button type="submit" id="submit-vote-${appointmentId}" class="btn btn-primary" disabled>Abstimmen</button>`;
     }
 
-    output += `     </div>
+    output += `     </div></div><div>
         </div></form>`;
 
     $(`.details-row[data-appointment-id="${appointmentId}"] .appointment-details`).html(output);
+
+
+    // Event Listener zum Absenden des Formulars hinzufügen
+    $(`#submit-vote-${appointmentId}`).click(function (event) {
+        event.preventDefault();
+
+        console.log('Formular abgeschickt');
+
+        const username = $(`#username-${appointmentId}`).val();
+        const selectedDate = $(`#date-${appointmentId}`).val();
+        const comment = $(`#comment-${appointmentId}`).val();
+
+        submitVote(appointmentId, username, selectedDate, comment);
+    });
+
+    // Event Listener zum Aktivieren/Deaktivieren des Abstimm-Buttons hinzufügen
+    $(`#username-${appointmentId}`).on('input', function () {
+        if ($(this).val()) {
+            $(`#submit-vote-${appointmentId}`).prop('disabled', false);
+        } else {
+            $(`#submit-vote-${appointmentId}`).prop('disabled', true);
+        }
+    });
+
 }
 
 function submitVote(appointmentId, username, selectedDaten, comment) {
@@ -221,13 +238,16 @@ function submitVote(appointmentId, username, selectedDaten, comment) {
             param: {
                 appointmentId: appointmentId,
                 username: username,
-                selectedDate: selectedDaten,
+                selectedDaten: selectedDaten,
                 comment: comment
             }
         },
         dataType: 'json',
-        success: function (data) {
-            if (data.success) {
+        success: function (data)
+        {
+            if (data.success)
+            {
+                console.log(data.success);
                 // Zeige Erfolgsmeldung an
                 let html = '<div class="alert alert-success" role="alert">';
                 html += 'Ihre Abstimmung wurde erfolgreich gespeichert.';
