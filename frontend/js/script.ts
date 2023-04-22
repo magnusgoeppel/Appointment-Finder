@@ -38,7 +38,6 @@ function displayAppointments(appointments : any[])
                     <th>ID</th>
                     <th>Titel</th>
                     <th>Ort</th>
-                    <th>Datum</th>
                     <th>Ablaufdatum des Votings</th>
                     <th>Status</th>
                 </tr>
@@ -46,9 +45,16 @@ function displayAppointments(appointments : any[])
     <tbody>`;
     for (const appointment of flatAppointments)
     {
+        function parseGermanDate(dateString)
+        {
+            const [day, month, year] = dateString.split('.');
+            return new Date(year, month - 1, day);
+        }
+
         let status = "Offen";
         const currentDate = new Date();
-        const expiryDate = new Date(appointment.expiry_date);
+        const expiryDate = parseGermanDate(appointment.expiry_date);
+        console.log(currentDate, expiryDate);
 
         if (currentDate > expiryDate)
         {
@@ -60,7 +66,6 @@ function displayAppointments(appointments : any[])
                 <td>${appointment.id}</td>
                 <td>${appointment.title}</td>
                 <td>${appointment.location}</td>
-                <td>${appointment.date}</td>
                 <td>${appointment.expiry_date}</td>
                 <td>${status}</td>
             </tr>
@@ -126,7 +131,7 @@ function updateAppointmentDetails(appointmentId, details, status)
     let output = `
         <div class="card">
             <div class="card-body">
-                <h4 class="card-title">Terminoptionen</h4>
+                <h4 class="card-title">Voting</h4>
                 <ul class="list-group">
     `;
 
@@ -135,32 +140,12 @@ function updateAppointmentDetails(appointmentId, details, status)
 
         output += `
             <li class="list-group-item">
-                ${selectableDate.date}
+                ${selectableDate.date}    
+                ${selectableDate.time}
                 <span class="badge bg-primary rounded-pill">${selectableDate.votes} Stimmen</span>
             </li>
         `;
     }
-
-    output += '</ul><br/>';
-
-    output += `
-                <h4 class="card-title">Bisherige Abstimmungen und Kommentare</h4>
-                <ul class="list-group">
-    `;
-
-    for (const userVote of details.user_votes)
-    {
-        const hasComment = userVote.comment.trim() !== '';
-
-        output += `
-        <li class="list-group-item">
-            <strong>${userVote.username}${hasComment ? ' :' : ''}</strong> <span class="user-comment">${userVote.comment}</span>
-            <br>
-            <small>Gewähltes Datum: ${userVote.selected_date}</small>
-        </li>
-    `;
-    }
-
     output += `</ul>`;
 
     output += `
@@ -173,13 +158,14 @@ function updateAppointmentDetails(appointmentId, details, status)
             <label for="username-${appointmentId}" class="form-label">Name</label>
             <input type="text" class="form-control" id="username-${appointmentId}" name="username" required>
         </div>
+        <!--TO-DO Checkboxes für die Termine-->
         <div class="mb-3">
             <label for="date-${appointmentId}" class="form-label">Terminoptionen</label>
             <select class="form-control" id="date-${appointmentId}" name="date" required>`;
 
     for (const selectableDate of details.selectable_dates)
     {
-        output += `<option value="${selectableDate.date}">${selectableDate.date}</option>`;
+        output += `<option value="${selectableDate.date} ${selectableDate.time}" data-date="${selectableDate.date}" data-time="${selectableDate.time}">${selectableDate.date}, ${selectableDate.time} Uhr</option>`;
     }
 
     output += `
@@ -202,6 +188,26 @@ function updateAppointmentDetails(appointmentId, details, status)
     output += `     </div></div><div>
         </div></form>`;
 
+    output += '</ul><br/>';
+
+    output += `
+                <h4 class="card-title">Bisherige Abstimmungen und Kommentare</h4>
+                <ul class="list-group">
+    `;
+
+    for (const userVote of details.user_votes)
+    {
+        const hasComment = userVote.comment.trim() !== '';
+
+        output += `
+    <li class="list-group-item">
+        <strong>${userVote.username}${hasComment ? ' :' : ''}</strong> <span class="user-comment">${userVote.comment}</span>
+        <br>
+        <small>Gewähltes Datum: ${userVote.selected_date}, ${userVote.selected_time} Uhr</small>
+    </li>
+`;
+    }
+
     $(`.details-row[data-appointment-id="${appointmentId}"] .appointment-details`).html(output);
 
 
@@ -212,10 +218,13 @@ function updateAppointmentDetails(appointmentId, details, status)
         console.log('Formular abgeschickt');
 
         const username = $(`#username-${appointmentId}`).val();
-        const selectedDate = $(`#date-${appointmentId}`).val();
+        const selectedOption = $(`#date-${appointmentId} option:selected`);
+        const selectedDate = selectedOption.data('date');
+        const selectedTime = selectedOption.data('time');
         const comment = $(`#comment-${appointmentId}`).val();
+        console.log (username, selectedDate, selectedTime, comment);
 
-        submitVote(appointmentId, username, selectedDate, comment);
+        submitVote(appointmentId, username, selectedDate, selectedTime, comment);
     });
 
     // Event Listener zum Aktivieren/Deaktivieren des Abstimm-Buttons hinzufügen
@@ -229,7 +238,8 @@ function updateAppointmentDetails(appointmentId, details, status)
 
 }
 
-function submitVote(appointmentId, username, selectedDaten, comment) {
+function submitVote(appointmentId, username, selectedDate, selectedTime, comment)
+{
     $.ajax({
         url: '../../backend/serviceHandler.php',
         method: 'POST',
@@ -238,13 +248,16 @@ function submitVote(appointmentId, username, selectedDaten, comment) {
             param: {
                 appointmentId: appointmentId,
                 username: username,
-                selectedDaten: selectedDaten,
+                selectedDaten: selectedDate,
+                selectedTime: selectedTime,
                 comment: comment
             }
         },
         dataType: 'json',
         success: function (data)
         {
+            console.log(data)
+
             if (data.success)
             {
                 console.log(data.success);

@@ -22,16 +22,21 @@ function loadAppointments() {
 function displayAppointments(appointments) {
     // Konvertiere das Array von Arrays in ein flaches Array
     var flatAppointments = [].concat(appointments);
-    var output = "<table class=\"table table-striped\">\n            <thead>\n                <tr>\n                    <th>Details</th>\n                    <th>ID</th>\n                    <th>Titel</th>\n                    <th>Ort</th>\n                    <th>Datum</th>\n                    <th>Ablaufdatum des Votings</th>\n                    <th>Status</th>\n                </tr>\n            </thead>\n    <tbody>";
+    var output = "<table class=\"table table-striped\">\n            <thead>\n                <tr>\n                    <th>Details</th>\n                    <th>ID</th>\n                    <th>Titel</th>\n                    <th>Ort</th>\n                    <th>Ablaufdatum des Votings</th>\n                    <th>Status</th>\n                </tr>\n            </thead>\n    <tbody>";
     for (var _i = 0, flatAppointments_1 = flatAppointments; _i < flatAppointments_1.length; _i++) {
         var appointment = flatAppointments_1[_i];
+        function parseGermanDate(dateString) {
+            var _a = dateString.split('.'), day = _a[0], month = _a[1], year = _a[2];
+            return new Date(year, month - 1, day);
+        }
         var status_1 = "Offen";
         var currentDate = new Date();
-        var expiryDate = new Date(appointment.expiry_date);
+        var expiryDate = parseGermanDate(appointment.expiry_date);
+        console.log(currentDate, expiryDate);
         if (currentDate > expiryDate) {
             status_1 = "Abgelaufen";
         }
-        output += "\n            <tr class=\"appointment-row\" data-appointment-id=\"".concat(appointment.id, "\">\n                <td><img class=\"toggle-details\" data-appointment-id=\"").concat(appointment.id, "\" src=\"img/expand.png\" alt=\"Toggle details\"></td>\n                <td>").concat(appointment.id, "</td>\n                <td>").concat(appointment.title, "</td>\n                <td>").concat(appointment.location, "</td>\n                <td>").concat(appointment.date, "</td>\n                <td>").concat(appointment.expiry_date, "</td>\n                <td>").concat(status_1, "</td>\n            </tr>\n            <tr class=\"details-row\" data-appointment-id=\"").concat(appointment.id, "\" style=\"display: none;\">\n                <td colspan=\"7\">\n                    <div class=\"appointment-details\"></div>\n                </td>\n            </tr>\n        ");
+        output += "\n            <tr class=\"appointment-row\" data-appointment-id=\"".concat(appointment.id, "\">\n                <td><img class=\"toggle-details\" data-appointment-id=\"").concat(appointment.id, "\" src=\"img/expand.png\" alt=\"Toggle details\"></td>\n                <td>").concat(appointment.id, "</td>\n                <td>").concat(appointment.title, "</td>\n                <td>").concat(appointment.location, "</td>\n                <td>").concat(appointment.expiry_date, "</td>\n                <td>").concat(status_1, "</td>\n            </tr>\n            <tr class=\"details-row\" data-appointment-id=\"").concat(appointment.id, "\" style=\"display: none;\">\n                <td colspan=\"7\">\n                    <div class=\"appointment-details\"></div>\n                </td>\n            </tr>\n        ");
     }
     output += "</tbody>" +
         "</table>";
@@ -72,23 +77,16 @@ function loadAppointmentDetails(appointmentId) {
     });
 }
 function updateAppointmentDetails(appointmentId, details, status) {
-    var output = "\n        <div class=\"card\">\n            <div class=\"card-body\">\n                <h4 class=\"card-title\">Terminoptionen</h4>\n                <ul class=\"list-group\">\n    ";
+    var output = "\n        <div class=\"card\">\n            <div class=\"card-body\">\n                <h4 class=\"card-title\">Voting</h4>\n                <ul class=\"list-group\">\n    ";
     for (var _i = 0, _a = details.selectable_dates; _i < _a.length; _i++) {
         var selectableDate = _a[_i];
-        output += "\n            <li class=\"list-group-item\">\n                ".concat(selectableDate.date, "\n                <span class=\"badge bg-primary rounded-pill\">").concat(selectableDate.votes, " Stimmen</span>\n            </li>\n        ");
-    }
-    output += '</ul><br/>';
-    output += "\n                <h4 class=\"card-title\">Bisherige Abstimmungen und Kommentare</h4>\n                <ul class=\"list-group\">\n    ";
-    for (var _b = 0, _c = details.user_votes; _b < _c.length; _b++) {
-        var userVote = _c[_b];
-        var hasComment = userVote.comment.trim() !== '';
-        output += "\n        <li class=\"list-group-item\">\n            <strong>".concat(userVote.username).concat(hasComment ? ' :' : '', "</strong> <span class=\"user-comment\">").concat(userVote.comment, "</span>\n            <br>\n            <small>Gew\u00E4hltes Datum: ").concat(userVote.selected_date, "</small>\n        </li>\n    ");
+        output += "\n            <li class=\"list-group-item\">\n                ".concat(selectableDate.date, "    \n                ").concat(selectableDate.time, "\n                <span class=\"badge bg-primary rounded-pill\">").concat(selectableDate.votes, " Stimmen</span>\n            </li>\n        ");
     }
     output += "</ul>";
-    output += "\n\n    <form class=\"appointment-form\" data-appointment-id=\"".concat(appointmentId, "\">\n        <h4 class=\"card-title mt-3\">Abstimmen</h4>\n        <div class=\"card\">\n            <div class=\"card-body\">\n        <div class=\"mb-3\">\n            <label for=\"username-").concat(appointmentId, "\" class=\"form-label\">Name</label>\n            <input type=\"text\" class=\"form-control\" id=\"username-").concat(appointmentId, "\" name=\"username\" required>\n        </div>\n        <div class=\"mb-3\">\n            <label for=\"date-").concat(appointmentId, "\" class=\"form-label\">Terminoptionen</label>\n            <select class=\"form-control\" id=\"date-").concat(appointmentId, "\" name=\"date\" required>");
-    for (var _d = 0, _e = details.selectable_dates; _d < _e.length; _d++) {
-        var selectableDate = _e[_d];
-        output += "<option value=\"".concat(selectableDate.date, "\">").concat(selectableDate.date, "</option>");
+    output += "\n\n    <form class=\"appointment-form\" data-appointment-id=\"".concat(appointmentId, "\">\n        <h4 class=\"card-title mt-3\">Abstimmen</h4>\n        <div class=\"card\">\n            <div class=\"card-body\">\n        <div class=\"mb-3\">\n            <label for=\"username-").concat(appointmentId, "\" class=\"form-label\">Name</label>\n            <input type=\"text\" class=\"form-control\" id=\"username-").concat(appointmentId, "\" name=\"username\" required>\n        </div>\n        <!--TO-DO Checkboxes f\u00FCr die Termine-->\n        <div class=\"mb-3\">\n            <label for=\"date-").concat(appointmentId, "\" class=\"form-label\">Terminoptionen</label>\n            <select class=\"form-control\" id=\"date-").concat(appointmentId, "\" name=\"date\" required>");
+    for (var _b = 0, _c = details.selectable_dates; _b < _c.length; _b++) {
+        var selectableDate = _c[_b];
+        output += "<option value=\"".concat(selectableDate.date, " ").concat(selectableDate.time, "\" data-date=\"").concat(selectableDate.date, "\" data-time=\"").concat(selectableDate.time, "\">").concat(selectableDate.date, ", ").concat(selectableDate.time, " Uhr</option>");
     }
     output += "\n            </select>\n        </div>\n        <div class=\"mb-3\">\n            <label for=\"comment-".concat(appointmentId, "\" class=\"form-label\">Kommentar</label>\n            <textarea class=\"form-control\" id=\"comment-").concat(appointmentId, "\" name=\"comment\" rows=\"3\" placeholder=\"optional\"></textarea>\n        </div>");
     output += "</form>";
@@ -99,15 +97,25 @@ function updateAppointmentDetails(appointmentId, details, status) {
         output += "<button type=\"submit\" id=\"submit-vote-".concat(appointmentId, "\" class=\"btn btn-primary\" disabled>Abstimmen</button>");
     }
     output += "     </div></div><div>\n        </div></form>";
+    output += '</ul><br/>';
+    output += "\n                <h4 class=\"card-title\">Bisherige Abstimmungen und Kommentare</h4>\n                <ul class=\"list-group\">\n    ";
+    for (var _d = 0, _e = details.user_votes; _d < _e.length; _d++) {
+        var userVote = _e[_d];
+        var hasComment = userVote.comment.trim() !== '';
+        output += "\n    <li class=\"list-group-item\">\n        <strong>".concat(userVote.username).concat(hasComment ? ' :' : '', "</strong> <span class=\"user-comment\">").concat(userVote.comment, "</span>\n        <br>\n        <small>Gew\u00E4hltes Datum: ").concat(userVote.selected_date, ", ").concat(userVote.selected_time, " Uhr</small>\n    </li>\n");
+    }
     $(".details-row[data-appointment-id=\"".concat(appointmentId, "\"] .appointment-details")).html(output);
     // Event Listener zum Absenden des Formulars hinzufügen
     $("#submit-vote-".concat(appointmentId)).click(function (event) {
         event.preventDefault();
         console.log('Formular abgeschickt');
         var username = $("#username-".concat(appointmentId)).val();
-        var selectedDate = $("#date-".concat(appointmentId)).val();
+        var selectedOption = $("#date-".concat(appointmentId, " option:selected"));
+        var selectedDate = selectedOption.data('date');
+        var selectedTime = selectedOption.data('time');
         var comment = $("#comment-".concat(appointmentId)).val();
-        submitVote(appointmentId, username, selectedDate, comment);
+        console.log(username, selectedDate, selectedTime, comment);
+        submitVote(appointmentId, username, selectedDate, selectedTime, comment);
     });
     // Event Listener zum Aktivieren/Deaktivieren des Abstimm-Buttons hinzufügen
     $("#username-".concat(appointmentId)).on('input', function () {
@@ -119,7 +127,7 @@ function updateAppointmentDetails(appointmentId, details, status) {
         }
     });
 }
-function submitVote(appointmentId, username, selectedDaten, comment) {
+function submitVote(appointmentId, username, selectedDate, selectedTime, comment) {
     $.ajax({
         url: '../../backend/serviceHandler.php',
         method: 'POST',
@@ -128,12 +136,14 @@ function submitVote(appointmentId, username, selectedDaten, comment) {
             param: {
                 appointmentId: appointmentId,
                 username: username,
-                selectedDaten: selectedDaten,
+                selectedDaten: selectedDate,
+                selectedTime: selectedTime,
                 comment: comment
             }
         },
         dataType: 'json',
         success: function (data) {
+            console.log(data);
             if (data.success) {
                 console.log(data.success);
                 // Zeige Erfolgsmeldung an

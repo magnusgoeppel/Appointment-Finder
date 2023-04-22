@@ -21,7 +21,7 @@ class SimpleLogic
                 $res = $this->dh->queryAppointmentDetails($param);
                 break;
             case "submitVote": // Fügen Sie diesen neuen Case hinzu
-                $res = $this->submit_Vote($param['appointmentId'], $param['username'], $param['selectedDaten'], $param['comment']);
+                $res = $this->submit_Vote($param['appointmentId'], $param['username'], $param['selectedDaten'], $param['selectedTime'], $param['comment']);
                 break;
             default:
                 $res = null;
@@ -30,10 +30,10 @@ class SimpleLogic
         return $res;
     }
 
-    public function submit_Vote($appointmentId, $username, $selectedDaten, $comment)
+    public function submit_Vote($appointmentId, $username, $selectedDaten, $selectedTime, $comment)
     {
         $dataHandler = new DataHandler();
-        $result = $dataHandler->submitVote($appointmentId, $username, $selectedDaten, $comment);
+        $result = $dataHandler->submitVote($appointmentId, $username, $selectedDaten, $selectedTime, $comment);
 
         if ($result) {
             return ['success' => true];
