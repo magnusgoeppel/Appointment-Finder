@@ -30,8 +30,8 @@ class DB
 
     public function query($sql)
     {
-        $result = $this->connection->query($sql);
 
+        $result = $this->connection->query($sql);
         if ($result === TRUE) {
             return $this->connection->insert_id;
         } else if ($result === FALSE) {

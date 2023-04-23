@@ -1,21 +1,18 @@
-$(document).ready(function()
-{
+$(document).ready(function () {
     loadAppointments();
 });
 
-function loadAppointments()
-{
+function loadAppointments() {
     $.ajax({
         url: '../../backend/serviceHandler.php',
         method: 'GET',
-        data: { method: 'queryAppointments' },
+        data: {method: 'queryAppointments'},
         dataType: 'json',
         success: function (data)
         {
             displayAppointments(data);
         },
-        error: function (jqXHR, textStatus, errorThrown)
-        {
+        error: function (jqXHR, textStatus, errorThrown) {
             console.error('Error: ' + jqXHR, textStatus, errorThrown);
             let html = '<div class="alert alert-danger" role="alert">';
             html += 'Fehler beim Laden der Termine. Bitte versuchen Sie es später erneut.';
@@ -25,12 +22,7 @@ function loadAppointments()
     });
 }
 
-function displayAppointments(appointments : any[])
-{
-
-    // Konvertiere das Array von Arrays in ein flaches Array
-    const flatAppointments: any[] = [].concat(appointments);
-
+function displayAppointments(appointments) {
     let output = `<table class="table table-striped">
             <thead>
                 <tr>
@@ -43,21 +35,13 @@ function displayAppointments(appointments : any[])
                 </tr>
             </thead>
     <tbody>`;
-    for (const appointment of flatAppointments)
-    {
-        function parseGermanDate(dateString)
-        {
-            const [day, month, year] = dateString.split('.');
-            return new Date(year, month - 1, day);
-        }
-
+    for (const appointment of appointments) {
         let status = "Offen";
         const currentDate = new Date();
         const expiryDate = parseGermanDate(appointment.expiry_date);
         console.log(currentDate, expiryDate);
 
-        if (currentDate > expiryDate)
-        {
+        if (currentDate > expiryDate) {
             status = "Abgelaufen";
         }
         output += `
@@ -78,7 +62,7 @@ function displayAppointments(appointments : any[])
     }
 
     output += "</tbody>" +
-                "</table>";
+        "</table>";
     $(".appointments-list").html(output);
 
     // Event Listener zum Klicken auf das Bild hinzufügen
@@ -86,13 +70,10 @@ function displayAppointments(appointments : any[])
         const appointmentId = $(this).data('appointment-id');
         const detailsRow = $(`.details-row[data-appointment-id="${appointmentId}"]`);
 
-        if (detailsRow.is(':visible'))
-        {
+        if (detailsRow.is(':visible')) {
             detailsRow.hide();
             $(this).attr('src', 'img/expand.png'); // Ändere das Bild zu "expand.png", wenn die Detailansicht geschlossen ist
-        }
-        else
-        {
+        } else {
             detailsRow.show();
             $(this).attr('src', 'img/collapse.png'); // Ändere das Bild zu "collapse.png", wenn die Detailansicht geöffnet ist
             loadAppointmentDetails(appointmentId);
@@ -100,23 +81,21 @@ function displayAppointments(appointments : any[])
     });
 }
 
-function loadAppointmentDetails(appointmentId)
-{
+function loadAppointmentDetails(appointmentId) {
     const detailsRow = $(`.details-row[data-appointment-id="${appointmentId}"]`);
     const status = detailsRow.prev('.appointment-row').find('td:last-child').text();
-
 
     $.ajax({
         url: '../../backend/serviceHandler.php',
         method: 'GET',
-        data: { method: 'queryAppointmentDetails', param: appointmentId },
+        data: {method: 'queryAppointmentDetails', param: appointmentId},
         dataType: 'json',
         success: function (data)
         {
             updateAppointmentDetails(appointmentId, data, status);
         },
-        error: function (jqXHR, textStatus, errorThrown)
-        {
+        error: function (jqXHR, textStatus, errorThrown) {
+            console.log('AppointmentID:', appointmentId, 'status:',status, 'detailsRow:',detailsRow);
             console.error('Error: ' + jqXHR, textStatus, errorThrown);
             let html = '<div class="alert alert-danger" role="alert">';
             html += 'Fehler beim Laden der Termine. Bitte versuchen Sie es später erneut.';
@@ -124,27 +103,20 @@ function loadAppointmentDetails(appointmentId)
             $('.appointments-list').html(html);
         }
     });
+
 }
 
 function updateAppointmentDetails(appointmentId, details, status)
 {
-    let output = `
-        <div class="card">
-            <div class="card-body">
-                <h4 class="card-title">Voting</h4>
-                <ul class="list-group">
-    `;
-
-    for (const selectableDate of details.selectable_dates)
-    {
-
+    let output = '<div class="card"> <div class="card-body"> <h4 class="card-title">Voting</h4> <ul class="list-group"> ';
+    for (const selectableDate of details.selectable_dates) {
         output += `
-            <li class="list-group-item">
-                ${selectableDate.date}    
-                ${selectableDate.time}
-                <span class="badge bg-primary rounded-pill">${selectableDate.votes} Stimmen</span>
-            </li>
-        `;
+        <li class="list-group-item">
+            ${selectableDate.date}    
+            ${selectableDate.time}
+            <span class="badge bg-primary rounded-pill">${selectableDate.votes} Stimmen</span>
+        </li>
+    `;
     }
     output += `</ul>`;
 
@@ -158,18 +130,25 @@ function updateAppointmentDetails(appointmentId, details, status)
             <label for="username-${appointmentId}" class="form-label">Name</label>
             <input type="text" class="form-control" id="username-${appointmentId}" name="username" required>
         </div>
-        <!--TO-DO Checkboxes für die Termine-->
-        <div class="mb-3">
-            <label for="date-${appointmentId}" class="form-label">Terminoptionen</label>
-            <select class="form-control" id="date-${appointmentId}" name="date" required>`;
-
-    for (const selectableDate of details.selectable_dates)
-    {
-        output += `<option value="${selectableDate.date} ${selectableDate.time}" data-date="${selectableDate.date}" data-time="${selectableDate.time}">${selectableDate.date}, ${selectableDate.time} Uhr</option>`;
+    <!--TO-DO Checkboxes für die Termine-->
+    <div class="mb-3">
+        <label for="date-${appointmentId}" class="form-label">Terminoptionen</label>
+        <div id="date-${appointmentId}">`;
+        for (const selectableDate of details.selectable_dates)
+        {
+            output += `
+            <div class="form-check">
+                <input class="form-check-input date-checkbox-${appointmentId}" type="checkbox" value="${selectableDate.date} ${selectableDate.time}" id="selectableDate-${appointmentId}-${selectableDate.date}-${selectableDate.time}" name="date" data-date="${selectableDate.date}" data-time="${selectableDate.time}">
+                <label class="form-check-label" for="selectableDate-${appointmentId}-${selectableDate.date}-${selectableDate.time}">
+                    ${selectableDate.date}, ${selectableDate.time} Uhr
+                </label>
+            </div>`;
     }
 
+    output += `</div>`;
+
     output += `
-            </select>
+        </select>
         </div>
         <div class="mb-3">
             <label for="comment-${appointmentId}" class="form-label">Kommentar</label>
@@ -178,56 +157,53 @@ function updateAppointmentDetails(appointmentId, details, status)
 
     output += `</form>`;
 
-    if (status === "Abgelaufen")
-    {
+    if (status === "Abgelaufen") {
         output += `<div class="alert alert-warning" role="alert">Dieser Termin ist abgelaufen. Abstimmung nicht mehr möglich.</div>`;
     } else {
-        output += `<button type="submit" id="submit-vote-${appointmentId}" class="btn btn-primary" disabled>Abstimmen</button>`;
+        output += `<button type="button" id="submit-vote-${appointmentId}" class="btn btn-primary" disabled>Abstimmen</button>`;
     }
 
     output += `     </div></div><div>
-        </div></form>`;
+    </div></form>`;
 
     output += '</ul><br/>';
 
     output += `
-                <h4 class="card-title">Bisherige Abstimmungen und Kommentare</h4>
-                <ul class="list-group">
-    `;
+            <h4 class"card-title">Bisherige Abstimmungen und Kommentare</h4>
+<ul class="list-group">
+`;
 
-    for (const userVote of details.user_votes)
-    {
+    for (const userVote of details.user_votes) {
         const hasComment = userVote.comment.trim() !== '';
 
         output += `
-    <li class="list-group-item">
-        <strong>${userVote.username}${hasComment ? ' :' : ''}</strong> <span class="user-comment">${userVote.comment}</span>
-        <br>
-        <small>Gewähltes Datum: ${userVote.selected_date}, ${userVote.selected_time} Uhr</small>
-    </li>
+<li class="list-group-item">
+    <strong>${userVote.username}${hasComment ? ' :' : ''}</strong> <span class="user-comment">${userVote.comment}</span>
+    <br>
+    <small>Gewähltes Datum: ${userVote.selected_date}, ${userVote.selected_time} Uhr</small>
+</li>
 `;
+
     }
 
     $(`.details-row[data-appointment-id="${appointmentId}"] .appointment-details`).html(output);
 
+    $(`#submit-vote-${appointmentId}`).on('click', function () {
+        let username = $(`#username-${appointmentId}`).val();
+        let comment = $(`#comment-${appointmentId}`).val();
+        let selectedDates = [];
 
-    // Event Listener zum Absenden des Formulars hinzufügen
-    $(`#submit-vote-${appointmentId}`).click(function (event) {
-        event.preventDefault();
+        $(`.date-checkbox-${appointmentId}:checked`).each(function () {
+            let date = $(this).data('date');
+            let parsedDate = parseGermanDate(date);
+            let time = $(this).data('time');
+            selectedDates.push({ date: parsedDate, time: time });
+        });
 
-        console.log('Formular abgeschickt');
-
-        const username = $(`#username-${appointmentId}`).val();
-        const selectedOption = $(`#date-${appointmentId} option:selected`);
-        const selectedDate = selectedOption.data('date');
-        const selectedTime = selectedOption.data('time');
-        const comment = $(`#comment-${appointmentId}`).val();
-        console.log (username, selectedDate, selectedTime, comment);
-
-        submitVote(appointmentId, username, selectedDate, selectedTime, comment);
+        submitVote(appointmentId, username, comment, selectedDates);
     });
 
-    // Event Listener zum Aktivieren/Deaktivieren des Abstimm-Buttons hinzufügen
+// Event Listener zum Aktivieren/Deaktivieren des Abstimm-Buttons hinzufügen
     $(`#username-${appointmentId}`).on('input', function () {
         if ($(this).val()) {
             $(`#submit-vote-${appointmentId}`).prop('disabled', false);
@@ -235,58 +211,36 @@ function updateAppointmentDetails(appointmentId, details, status)
             $(`#submit-vote-${appointmentId}`).prop('disabled', true);
         }
     });
-
 }
 
-function submitVote(appointmentId, username, selectedDate, selectedTime, comment)
+function submitVote(appointmentId, username, comment, selectedDates)
 {
+    console.log(appointmentId, username, comment, selectedDates);
     $.ajax({
         url: '../../backend/serviceHandler.php',
-        method: 'POST',
+        type: 'GET',
         data: {
-            method: 'submitVote',
+            method: 'submitUserVote',
             param: {
-                appointmentId: appointmentId,
+                appointment_id: appointmentId,
                 username: username,
-                selectedDaten: selectedDate,
-                selectedTime: selectedTime,
+                selected_dates: selectedDates,
                 comment: comment
             }
         },
         dataType: 'json',
-        success: function (data)
+        success: function (response)
         {
-            console.log(data)
-
-            if (data.success)
-            {
-                console.log(data.success);
-                // Zeige Erfolgsmeldung an
-                let html = '<div class="alert alert-success" role="alert">';
-                html += 'Ihre Abstimmung wurde erfolgreich gespeichert.';
-                html += '</div>';
-                $(`.details-row[data-appointment-id="${appointmentId}"] .appointment-details`).prepend(html);
-
-                // Aktualisiere die Detailansicht
-                loadAppointmentDetails(appointmentId);
-            }
-            else
-            {
-                // Zeige Fehlermeldung an
-                let html = '<div class="alert alert-danger" role="alert">';
-                html += 'Fehler beim Speichern Ihrer Abstimmung. Bitte versuchen Sie es später erneut.';
-                html += '</div>';
-                $(`.details-row[data-appointment-id="${appointmentId}"] .appointment-details`).prepend(html);
-            }
+            console.log('Ihre Abstimmung wurde erfolgreich gespeichert!');
         },
-        error: function (jqXHR, textStatus, errorThrown)
-        {
-            console.error('Error: ' + jqXHR, textStatus, errorThrown);
-            let html = '<div class="alert alert-danger" role="alert">';
-            html += 'Fehler beim Speichern Ihrer Abstimmung. Bitte versuchen Sie es später erneut.';
-            html += '</div>';
-            $(`.details-row[data-appointment-id="${appointmentId}"] .appointment-details`).prepend(html);
+        error: function () {
+            console.error('Fehler beim Speichern Ihrer Abstimmung. Bitte versuchen Sie es erneut.');
         }
     });
 }
 
+function parseGermanDate(dateString)
+{
+    const [day, month, year] = dateString.split('.');
+    return new Date(year, month - 1, day);
+}

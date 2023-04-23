@@ -16,12 +16,11 @@ class SimpleLogic
             case "queryAppointments":
                 $res = $this->dh->queryAppointments();
                 break;
-            // 2-----------------------------------------------------------------------------
             case "queryAppointmentDetails":
                 $res = $this->dh->queryAppointmentDetails($param);
                 break;
-            case "submitVote": // Fügen Sie diesen neuen Case hinzu
-                $res = $this->submit_Vote($param['appointmentId'], $param['username'], $param['selectedDaten'], $param['selectedTime'], $param['comment']);
+            case "submitUserVote":
+                $res = $this->submitUserVote($param);
                 break;
             default:
                 $res = null;
@@ -30,16 +29,21 @@ class SimpleLogic
         return $res;
     }
 
-    public function submit_Vote($appointmentId, $username, $selectedDaten, $selectedTime, $comment)
+    function submitUserVote($params)
     {
-        $dataHandler = new DataHandler();
-        $result = $dataHandler->submitVote($appointmentId, $username, $selectedDaten, $selectedTime, $comment);
+        $appointmentId = $params['appointment_id'];
+        $username = $params['username'];
+        $selectedDates = $params['selected_dates'];
+        $comment = $params['comment'];
 
-        if ($result) {
-            return ['success' => true];
+        $userVoteId = $this->dh->submitUserVote($appointmentId, $username, $selectedDates, $comment);
+
+        if ($userVoteId !== false) {
+            $res = $this->dh->submitSelectedDates($userVoteId, $selectedDates);
         } else {
-            return ['success' => false];
+            $res = false;
         }
-    }
 
+        return $res;
+    }
 }
