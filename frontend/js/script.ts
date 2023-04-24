@@ -24,7 +24,8 @@ function loadAppointments() {
     });
 }
 
-function displayAppointments(appointments) {
+function displayAppointments(appointments)
+{
     let output = `<table class="table table-striped">
             <thead>
                 <tr>
@@ -37,12 +38,14 @@ function displayAppointments(appointments) {
                 </tr>
             </thead>
     <tbody>`;
-    for (const appointment of appointments) {
+    for (const appointment of appointments)
+    {
         let status = "Offen";
         const currentDate = new Date();
         const expiryDate = parseGermanDate(appointment.expiry_date);
 
-        if (currentDate > expiryDate) {
+        if (currentDate > expiryDate)
+        {
             status = "Abgelaufen";
         }
         output += `
@@ -104,6 +107,7 @@ function loadAppointmentDetails(appointmentId) {
             $('.appointments-list').html(html);
         }
     });
+
 
 }
 
@@ -193,7 +197,9 @@ function updateAppointmentDetails(appointmentId, details, status) {
 
     $(`.details-row[data-appointment-id="${appointmentId}"] .appointment-details`).html(output);
 
-    $(`#submit-vote-${appointmentId}`).on('click', function () {
+    $(`#submit-vote-${appointmentId}`).on('click', function ()
+    {
+
         let username = $(`#username-${appointmentId}`).val();
         let comment = $(`#comment-${appointmentId}`).val();
         let selectedDates = [];
@@ -203,9 +209,13 @@ function updateAppointmentDetails(appointmentId, details, status) {
             let parsedDate = parseDate(date);
             let time = $(this).data('time');
             selectedDates.push({ date: parsedDate, time: time });
+
         });
 
-        submitVote(appointmentId, username, comment, selectedDates);
+        submitVote(appointmentId, username, comment, selectedDates, function ()
+        {
+            loadAppointmentDetails(appointmentId);
+        });
     });
 
 // Event Listener zum Aktivieren/Deaktivieren des Abstimm-Buttons hinzufügen
@@ -219,7 +229,7 @@ function updateAppointmentDetails(appointmentId, details, status) {
         }
     });
 }
-    function submitVote(appointmentId, username, comment, selectedDates)
+    function submitVote(appointmentId, username, comment, selectedDates, callback)
 {
     $.ajax({
         url: '../../backend/serviceHandler.php',
@@ -236,7 +246,12 @@ function updateAppointmentDetails(appointmentId, details, status) {
         dataType: 'json',
         success: function (response)
         {
+            if (callback)
+            {
+                callback();
+            }
             console.log('Ihre Abstimmung wurde erfolgreich gespeichert!');
+            console.log(response);
         },
         error: function ()
         {
@@ -245,20 +260,28 @@ function updateAppointmentDetails(appointmentId, details, status) {
     });
 }
 
-function submitNewAppointment(event) {
+function submitNewAppointment(event)
+{
     event.preventDefault();
 
     const title = $("#title").val();
     const location = $("#location").val();
+    const description = $("#description").val();
+    const duration = $("#duration").val();
+    const options = $("#options").val();
     const expiry_date = $("#expiry_date").val();
     const selectable_dates = $("#selectable_dates").val();
 
     const data =
     {
         method: "createNewAppointment",
-        param: {
+        param:
+        {
             title,
             location,
+            description,
+            duration,
+            options,
             expiry_date,
             selectable_dates,
         },
@@ -269,10 +292,12 @@ function submitNewAppointment(event) {
         type: "GET",
         data: data,
         dataType: "json",
-        success: function (result) {
+        success: function (result)
+        {
             console.log(result);
         },
-        error: function (xhr, status, error) {
+        error: function (xhr, status, error)
+        {
             console.error("Error:", error);
         },
     });

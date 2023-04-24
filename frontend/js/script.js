@@ -113,7 +113,9 @@ function updateAppointmentDetails(appointmentId, details, status) {
             var time = $(this).data('time');
             selectedDates.push({ date: parsedDate, time: time });
         });
-        submitVote(appointmentId, username, comment, selectedDates);
+        submitVote(appointmentId, username, comment, selectedDates, function () {
+            loadAppointmentDetails(appointmentId);
+        });
     });
     // Event Listener zum Aktivieren/Deaktivieren des Abstimm-Buttons hinzufügen
     $("#username-".concat(appointmentId)).on('input', function () {
@@ -125,7 +127,7 @@ function updateAppointmentDetails(appointmentId, details, status) {
         }
     });
 }
-function submitVote(appointmentId, username, comment, selectedDates) {
+function submitVote(appointmentId, username, comment, selectedDates, callback) {
     $.ajax({
         url: '../../backend/serviceHandler.php',
         type: 'GET',
@@ -140,7 +142,11 @@ function submitVote(appointmentId, username, comment, selectedDates) {
         },
         dataType: 'json',
         success: function (response) {
+            if (callback) {
+                callback();
+            }
             console.log('Ihre Abstimmung wurde erfolgreich gespeichert!');
+            console.log(response);
         },
         error: function () {
             console.error('Fehler beim Speichern Ihrer Abstimmung. Bitte versuchen Sie es erneut.');
@@ -151,6 +157,9 @@ function submitNewAppointment(event) {
     event.preventDefault();
     var title = $("#title").val();
     var location = $("#location").val();
+    var description = $("#description").val();
+    var duration = $("#duration").val();
+    var options = $("#options").val();
     var expiry_date = $("#expiry_date").val();
     var selectable_dates = $("#selectable_dates").val();
     var data = {
@@ -158,6 +167,9 @@ function submitNewAppointment(event) {
         param: {
             title: title,
             location: location,
+            description: description,
+            duration: duration,
+            options: options,
             expiry_date: expiry_date,
             selectable_dates: selectable_dates,
         },

@@ -152,17 +152,20 @@ class DataHandler
     {
         $title = $this->escape($data["title"]);
         $location = $this->escape($data["location"]);
+        $description = $this->escape($data["description"]);
+        $duration = $this->escape($data["duration"]);
         $expiry_date = $this->escape($data["expiry_date"]);
-        $selectable_dates = $this->escape($data["selectable_dates"]);
+        //$selectable_dates = $this->escape($data["selectable_dates"]);
 
-        $sql = "INSERT INTO appointments (title, location, expiry_date) VALUES ('$title', '$location', '$expiry_date')";
+        $sql = "INSERT INTO appointments (title, location, description, duration, expiry_date) VALUES ('$title', '$location', '$description', '$duration' '$expiry_date')";
         $this->query($sql);
 
         $appointment_id = $this->getLastInsertedId();
 
         $selectable_dates = json_decode($data["selectable_dates"], true);
 
-        foreach ($selectable_dates as $dateString) {
+        foreach ($selectable_dates as $dateString)
+        {
             $date_time = DateTime::createFromFormat('d.m.Y H:i', $dateString);
             $date = $date_time->format('Y-m-d');
             $time = $date_time->format('H:i:s');
