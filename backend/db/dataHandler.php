@@ -1,5 +1,6 @@
 <?php
 include( __DIR__ . '/../models/appointment.php');
+include(__DIR__ . '/../models/userVote.php');
 include(__DIR__ . '/db.php');
 
 class DataHandler
@@ -18,7 +19,6 @@ class DataHandler
         {
             return false;
         }
-
         $appointments = [];
 
 
@@ -27,7 +27,7 @@ class DataHandler
             $expiryDate = new DateTime($row['expiry_date']);
             $formattedExpiryDate = $expiryDate->format('d.m.Y');
 
-            $appointment = new Appointment($row['id'], $row['title'], $row['location'], /*$formattedDate,*/ $formattedExpiryDate);
+            $appointment = new Appointment($row['id'], $row['title'], $row['location'], $formattedExpiryDate);
             $appointments[] = $appointment;
         }
         return $appointments;
@@ -97,54 +97,80 @@ class DataHandler
         return $result;
     }
 
-    public function submitSelectedDates($userVoteId, $selectedDates)
+    public function submitUserVote($param)
     {
+        return $this->getSubmitUserVote($param);
+    }
+
+    public function getSubmitUserVote($param)
+    {
+        $appointment_id = $param['appointment_id'];
+        $username = $param['username'];
+        $comment = $param['comment'];
+        $selected_dates = $param['selected_dates'];
+
         $db = new DB();
-        $userVoteId = $db->escape($userVoteId);
-        $success = true;
 
-        foreach ($selectedDates as $selectedDate) {
-            $formattedDate = $selectedDate['date'];
+        // Insert user vote into user_votes table
+        $username = $db->escape($username);
+        $comment = $db->escape($comment);
+        $sql = "INSERT INTO user_votes (fk_appointment_id, username, comment) VALUES ('$appointment_id', '$username', '$comment')";
+        $db->query($sql);
 
-            $dateObj = DateTime::createFromFormat('d.m.Y', $formattedDate);
-            $dateForDb = $dateObj->format('Y-m-d');
+        // Get the last inserted user_vote id
+        $user_vote_id = $db->getLastInsertedId();
 
-            // Get the selected date ID from the selectable_dates table
-            $query = "SELECT id FROM selectable_dates WHERE date = '$dateForDb' AND fk_appointment_id = '$appointmentId'";
-            $result = $db->query($query);
+        // Insert selected_dates into user_selected_dates table
+        foreach ($selected_dates as $selected_date) {
+            $date = $selected_date['date'];
+            $time = $selected_date['time'];
 
-            if ($result && count($result) > 0) {
-                $selectedDateId = $result[0]['id'];
+            // Find the selectable_dates id for the given date and time
+            $sql = "SELECT id FROM selectable_dates WHERE fk_appointment_id = '$appointment_id' AND date = '$date' AND time = '$time'";
+            $result = $db->query($sql);
 
-                // Insert the selected date into the user_selected_date table
-                $query = "INSERT INTO user_selected_dates (fk_user_vote_id, fk_selectable_date_id) VALUES ('$userVoteId', '$selectedDateId')";
-                $result = $db->query($query);
+            if ($result)
+            {
+                $selectable_dates_id = $result[0]['id'];
 
-                if (!$result) {
-                    $success = false;
-                    break;
-                }
-            } else {
-                $success = false;
-                break;
+                // Insert the record into user_selected_dates table
+                $sql = "INSERT INTO user_selected_dates (fk_user_vote_id, fk_selectable_dates_id) VALUES ('$user_vote_id', '$selectable_dates_id')";
+                $db->query($sql);
             }
         }
 
-        return $success;
+        return ['status' => 'success'];
     }
-    public function submitUserVote($appointmentId, $username, $selectedDates, $comment)
+
+    public function createNewAppointment($data)
     {
-        $db = new DB();
-        $appointmentId = $db->escape($appointmentId);
-        $username = $db->escape($username);
-        $comment = $db->escape($comment);
 
-        $result = $db->query("INSERT INTO user_votes (fk_appointment_id, username, comment) VALUES ('$appointmentId', '$username', '$comment')");
-
-        if ($result) {
-            return $db->getLastInsertId();
-        } else {
-            return false;
-        }
+        return $this->getCreateNewAppointment($data);
     }
+
+    public function getCreateNewAppointment($data)
+    {
+        $title = $this->escape($data["title"]);
+        $location = $this->escape($data["location"]);
+        $expiry_date = $this->escape($data["expiry_date"]);
+        $selectable_dates = $this->escape($data["selectable_dates"]);
+
+        $sql = "INSERT INTO appointments (title, location, expiry_date) VALUES ('$title', '$location', '$expiry_date')";
+        $this->query($sql);
+
+        $appointment_id = $this->getLastInsertedId();
+
+        $selectable_dates = json_decode($data["selectable_dates"], true);
+
+        foreach ($selectable_dates as $dateString) {
+            $date_time = DateTime::createFromFormat('d.m.Y H:i', $dateString);
+            $date = $date_time->format('Y-m-d');
+            $time = $date_time->format('H:i:s');
+
+            $sql = "INSERT INTO selectable_dates (fk_appointment_id, date, time) VALUES ('$appointment_id', '$date', '$time')";
+            $this->query($sql);
+        }
+
+    }
+
 }

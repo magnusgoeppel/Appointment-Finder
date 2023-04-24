@@ -54,5 +54,10 @@ class DB
     {
         $this->connection->close();
     }
+
+    public function getLastInsertedId()
+    {
+        return $this->connection-> insert_id;
+    }
 }
 

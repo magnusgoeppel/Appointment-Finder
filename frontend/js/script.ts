@@ -1,5 +1,7 @@
-$(document).ready(function () {
+$(document).ready(function ()
+{
     loadAppointments();
+    document.getElementById("new-appointment-btn").addEventListener("click", submitNewAppointment);
 });
 
 function loadAppointments() {
@@ -39,7 +41,6 @@ function displayAppointments(appointments) {
         let status = "Offen";
         const currentDate = new Date();
         const expiryDate = parseGermanDate(appointment.expiry_date);
-        console.log(currentDate, expiryDate);
 
         if (currentDate > expiryDate) {
             status = "Abgelaufen";
@@ -94,8 +95,8 @@ function loadAppointmentDetails(appointmentId) {
         {
             updateAppointmentDetails(appointmentId, data, status);
         },
-        error: function (jqXHR, textStatus, errorThrown) {
-            console.log('AppointmentID:', appointmentId, 'status:',status, 'detailsRow:',detailsRow);
+        error: function (jqXHR, textStatus, errorThrown)
+        {
             console.error('Error: ' + jqXHR, textStatus, errorThrown);
             let html = '<div class="alert alert-danger" role="alert">';
             html += 'Fehler beim Laden der Termine. Bitte versuchen Sie es später erneut.';
@@ -106,8 +107,8 @@ function loadAppointmentDetails(appointmentId) {
 
 }
 
-function updateAppointmentDetails(appointmentId, details, status)
-{
+function updateAppointmentDetails(appointmentId, details, status) {
+    let isExpired = status === "Abgelaufen";
     let output = '<div class="card"> <div class="card-body"> <h4 class="card-title">Voting</h4> <ul class="list-group"> ';
     for (const selectableDate of details.selectable_dates) {
         output += `
@@ -128,17 +129,17 @@ function updateAppointmentDetails(appointmentId, details, status)
             <div class="card-body">
         <div class="mb-3">
             <label for="username-${appointmentId}" class="form-label">Name</label>
-            <input type="text" class="form-control" id="username-${appointmentId}" name="username" required>
+            <input type="text" class="form-control" id="username-${appointmentId}" name="username" required ${isExpired ? 'disabled' : ''}>
         </div>
-    <!--TO-DO Checkboxes für die Termine-->
+   
     <div class="mb-3">
         <label for="date-${appointmentId}" class="form-label">Terminoptionen</label>
         <div id="date-${appointmentId}">`;
-        for (const selectableDate of details.selectable_dates)
-        {
-            output += `
+    for (const selectableDate of details.selectable_dates)
+    {
+        output += `
             <div class="form-check">
-                <input class="form-check-input date-checkbox-${appointmentId}" type="checkbox" value="${selectableDate.date} ${selectableDate.time}" id="selectableDate-${appointmentId}-${selectableDate.date}-${selectableDate.time}" name="date" data-date="${selectableDate.date}" data-time="${selectableDate.time}">
+                <input class="form-check-input date-checkbox-${appointmentId}" type="checkbox" value="${selectableDate.date} ${selectableDate.time}" id="selectableDate-${appointmentId}-${selectableDate.date}-${selectableDate.time}" name="date" data-date="${selectableDate.date}" data-time="${selectableDate.time}" ${isExpired ? 'disabled' : ''}>
                 <label class="form-check-label" for="selectableDate-${appointmentId}-${selectableDate.date}-${selectableDate.time}">
                     ${selectableDate.date}, ${selectableDate.time} Uhr
                 </label>
@@ -151,13 +152,13 @@ function updateAppointmentDetails(appointmentId, details, status)
         </select>
         </div>
         <div class="mb-3">
-            <label for="comment-${appointmentId}" class="form-label">Kommentar</label>
-            <textarea class="form-control" id="comment-${appointmentId}" name="comment" rows="3" placeholder="optional"></textarea>
+            <label for="comment-${appointmentId}" class="form-label">Kommentare</label>
+            <textarea class="form-control" id="comment-${appointmentId}" name="comment" rows="3" placeholder="optional" ${isExpired ? 'disabled' : ''}></textarea>
         </div>`;
 
     output += `</form>`;
 
-    if (status === "Abgelaufen") {
+    if (isExpired) {
         output += `<div class="alert alert-warning" role="alert">Dieser Termin ist abgelaufen. Abstimmung nicht mehr möglich.</div>`;
     } else {
         output += `<button type="button" id="submit-vote-${appointmentId}" class="btn btn-primary" disabled>Abstimmen</button>`;
@@ -169,20 +170,24 @@ function updateAppointmentDetails(appointmentId, details, status)
     output += '</ul><br/>';
 
     output += `
-            <h4 class"card-title">Bisherige Abstimmungen und Kommentare</h4>
+            <h4 class"card-title">Kommentare</h4>
 <ul class="list-group">
 `;
 
-    for (const userVote of details.user_votes) {
+    for (const userVote of details.user_votes)
+    {
         const hasComment = userVote.comment.trim() !== '';
 
-        output += `
-<li class="list-group-item">
-    <strong>${userVote.username}${hasComment ? ' :' : ''}</strong> <span class="user-comment">${userVote.comment}</span>
-    <br>
-    <small>Gewähltes Datum: ${userVote.selected_date}, ${userVote.selected_time} Uhr</small>
-</li>
-`;
+        if (hasComment)
+        {
+            output += `
+        <li class="list-group-item">
+            <strong>${userVote.username}:</strong>
+            <br>
+            <span class="user-comment">${userVote.comment}</span>
+        </li>
+        `;
+        }
 
     }
 
@@ -195,7 +200,7 @@ function updateAppointmentDetails(appointmentId, details, status)
 
         $(`.date-checkbox-${appointmentId}:checked`).each(function () {
             let date = $(this).data('date');
-            let parsedDate = parseGermanDate(date);
+            let parsedDate = parseDate(date);
             let time = $(this).data('time');
             selectedDates.push({ date: parsedDate, time: time });
         });
@@ -204,18 +209,18 @@ function updateAppointmentDetails(appointmentId, details, status)
     });
 
 // Event Listener zum Aktivieren/Deaktivieren des Abstimm-Buttons hinzufügen
-    $(`#username-${appointmentId}`).on('input', function () {
-        if ($(this).val()) {
+    $(`#username-${appointmentId}`).on('input', function ()
+    {
+        if ($(this).val() && !isExpired)
+        {
             $(`#submit-vote-${appointmentId}`).prop('disabled', false);
         } else {
             $(`#submit-vote-${appointmentId}`).prop('disabled', true);
         }
     });
 }
-
-function submitVote(appointmentId, username, comment, selectedDates)
+    function submitVote(appointmentId, username, comment, selectedDates)
 {
-    console.log(appointmentId, username, comment, selectedDates);
     $.ajax({
         url: '../../backend/serviceHandler.php',
         type: 'GET',
@@ -233,14 +238,62 @@ function submitVote(appointmentId, username, comment, selectedDates)
         {
             console.log('Ihre Abstimmung wurde erfolgreich gespeichert!');
         },
-        error: function () {
+        error: function ()
+        {
             console.error('Fehler beim Speichern Ihrer Abstimmung. Bitte versuchen Sie es erneut.');
         }
     });
 }
 
+function submitNewAppointment(event) {
+    event.preventDefault();
+
+    const title = $("#title").val();
+    const location = $("#location").val();
+    const expiry_date = $("#expiry_date").val();
+    const selectable_dates = $("#selectable_dates").val();
+
+    const data =
+    {
+        method: "createNewAppointment",
+        param: {
+            title,
+            location,
+            expiry_date,
+            selectable_dates,
+        },
+    };
+
+    $.ajax({
+        url: "serviceHandler.php",
+        type: "GET",
+        data: data,
+        dataType: "json",
+        success: function (result) {
+            console.log(result);
+        },
+        error: function (xhr, status, error) {
+            console.error("Error:", error);
+        },
+    });
+}
+
+
 function parseGermanDate(dateString)
 {
     const [day, month, year] = dateString.split('.');
     return new Date(year, month - 1, day);
+}
+
+function parseDate(dateString)
+{
+    const dateParts = dateString.split('.');
+    const day = dateParts[1];
+    const month = dateParts[0];
+    const year = dateParts[2];
+
+    // Kombiniere die Teile im Format JJJJ-MM-DD
+    const formattedDate = `${year}-${month}-${day}`;
+
+    return formattedDate;
 }

@@ -20,30 +20,15 @@ class SimpleLogic
                 $res = $this->dh->queryAppointmentDetails($param);
                 break;
             case "submitUserVote":
-                $res = $this->submitUserVote($param);
+                $res = $this->dh->submitUserVote($param);
+                break;
+            case "createNewAppointment":
+                $res = $this->dh->createNewAppointment($param);
                 break;
             default:
                 $res = null;
                 break;
         }
-        return $res;
-    }
-
-    function submitUserVote($params)
-    {
-        $appointmentId = $params['appointment_id'];
-        $username = $params['username'];
-        $selectedDates = $params['selected_dates'];
-        $comment = $params['comment'];
-
-        $userVoteId = $this->dh->submitUserVote($appointmentId, $username, $selectedDates, $comment);
-
-        if ($userVoteId !== false) {
-            $res = $this->dh->submitSelectedDates($userVoteId, $selectedDates);
-        } else {
-            $res = false;
-        }
-
         return $res;
     }
 }
