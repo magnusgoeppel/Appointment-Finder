@@ -170,22 +170,38 @@ class DataHandler
         $sql = "INSERT INTO appointments (title, location, description, duration, expiry_date) VALUES ('$title', '$location', '$description', '$duration', '$expiry_date')";
         $db->query($sql);
 
-        //$appointment_id = $db->insert_id();
+        //$appointment_id = $db->getLastInsertedId();
 
-        $selectable_dates_string = $selectable_dates;
-        $selectable_dates = explode("\n", $selectable_dates_string);
+        $selectable_dates = str_replace(" Uhr", "", $selectable_dates);
+        echo $selectable_dates . "\n";
 
-        foreach ($selectable_dates as $selectable_date) {
-            // Split the string using the comma and space as the delimiter
-            list($date, $timeWithSuffix) = explode(', ', $selectable_date);
+        $selectable_dates = str_replace(["\n", "\r\n", "\r", "\\n"], ",", $selectable_dates);
+        echo $selectable_dates . "\n";
 
-            // Remove the " Uhr" suffix from the time part
-            $time = str_replace(' Uhr', '', $timeWithSuffix);
-            $time = str_replace('.', ':', $time);
+        // Teile den String in ein Array
+        $selectable_dates_array = explode(",", $selectable_dates);
+        echo "selectable_dates_array: ";
+        print_r($selectable_dates_array);
+        echo "\n";
 
-            echo "Date: $date\n";
-            echo "Time: $time\n";
+        // Solange $selectable_dates_array Elemente enthält
+        for ($i = 0; $i < count($selectable_dates_array); $i += 2) {
+            $date = $selectable_dates_array[$i];
+            $time = $selectable_dates_array[$i + 1];
+
+            // Entferne Leerzeichen und ersetze Punkte durch Doppelpunkte in der Uhrzeit
+            $time = str_replace(" ", "", $time);
+            $time = str_replace(".", ":", $time);
+
+            echo "date: " . $date . "\n";
+            echo "time: " . $time . "\n";
+
+            $sql = "INSERT INTO selectable_dates (fk_appointment_id, date, time) VALUES ('$appointment_id', '$date', '$time')";
         }
-    }
+        return ['status' => 'success'];
+
+
 
     }
+
+}
