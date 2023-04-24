@@ -112,6 +112,7 @@ class DataHandler
         $db = new DB();
 
         // Insert user vote into user_votes table
+        $appointment_id = $db->escape($appointment_id);
         $username = $db->escape($username);
         $comment = $db->escape($comment);
         $sql = "INSERT INTO user_votes (fk_appointment_id, username, comment) VALUES ('$appointment_id', '$username', '$comment')";
@@ -150,30 +151,41 @@ class DataHandler
 
     public function getCreateNewAppointment($data)
     {
-        $title = $this->escape($data["title"]);
-        $location = $this->escape($data["location"]);
-        $description = $this->escape($data["description"]);
-        $duration = $this->escape($data["duration"]);
-        $expiry_date = $this->escape($data["expiry_date"]);
-        //$selectable_dates = $this->escape($data["selectable_dates"]);
+        $title = $data["title"];
+        $location = $data["location"];
+        $description = $data["description"];
+        $duration = $data["duration"];
+        $selectable_dates = $data["selectable_dates"];
+        $expiry_date = $data["expiry_date"];
 
-        $sql = "INSERT INTO appointments (title, location, description, duration, expiry_date) VALUES ('$title', '$location', '$description', '$duration' '$expiry_date')";
-        $this->query($sql);
+        $db = new DB();
 
-        $appointment_id = $this->getLastInsertedId();
+        $title = $db->escape($title);
+        $location = $db->escape($location);
+        $description = $db->escape($description);
+        $duration = $db->escape($duration);
+        $selectable_dates = $db->escape($selectable_dates);
+        $expiry_date = $db->escape($expiry_date);
 
-        $selectable_dates = json_decode($data["selectable_dates"], true);
+        $sql = "INSERT INTO appointments (title, location, description, duration, expiry_date) VALUES ('$title', '$location', '$description', '$duration', '$expiry_date')";
+        $db->query($sql);
 
-        foreach ($selectable_dates as $dateString)
-        {
-            $date_time = DateTime::createFromFormat('d.m.Y H:i', $dateString);
-            $date = $date_time->format('Y-m-d');
-            $time = $date_time->format('H:i:s');
+        //$appointment_id = $db->insert_id();
 
-            $sql = "INSERT INTO selectable_dates (fk_appointment_id, date, time) VALUES ('$appointment_id', '$date', '$time')";
-            $this->query($sql);
+        $selectable_dates_string = $selectable_dates;
+        $selectable_dates = explode("\n", $selectable_dates_string);
+
+        foreach ($selectable_dates as $selectable_date) {
+            // Split the string using the comma and space as the delimiter
+            list($date, $timeWithSuffix) = explode(', ', $selectable_date);
+
+            // Remove the " Uhr" suffix from the time part
+            $time = str_replace(' Uhr', '', $timeWithSuffix);
+            $time = str_replace('.', ':', $time);
+
+            echo "Date: $date\n";
+            echo "Time: $time\n";
         }
-
     }
 
-}
+    }

@@ -266,13 +266,23 @@ function submitNewAppointment(event)
 {
     event.preventDefault();
 
+    function convertDateTimeFormat(dateTimeString)
+    {
+        const [datePart, timePart] = dateTimeString.split(', ');
+        const [day, month, year] = datePart.split('.');
+        const [time, uhr] = timePart.split(' ');
+        return `${year}-${month}-${day}, ${time}.00 ${uhr}`;
+    }
+
     const title = $("#title").val();
     const location = $("#location").val();
     const description = $("#description").val();
     const duration = $("#duration").val();
-    const options = $("#options").val();
-    const expiry_date = $("#expiry_date").val();
-    const selectable_dates = $("#selectable_dates").val();
+    const selectable_dates_unformed = $("#selectable_dates").val();
+    const selectable_dates = typeof selectable_dates_unformed === 'string' ? selectable_dates_unformed.split('\n').map
+                                          (dateTimeString => convertDateTimeFormat(dateTimeString)).join('\n') : '';
+    const expiry_date = parseDate($("#expiry_date").val());
+
 
     const data =
     {
@@ -283,14 +293,15 @@ function submitNewAppointment(event)
             location,
             description,
             duration,
-            options,
-            expiry_date,
             selectable_dates,
+            expiry_date,
+
         },
     };
+    console.log(data);
 
     $.ajax({
-        url: "serviceHandler.php",
+        url: "../../backend/serviceHandler.php",
         type: "GET",
         data: data,
         dataType: "json",
@@ -312,15 +323,9 @@ function parseGermanDate(dateString)
     return new Date(year, month - 1, day);
 }
 
+
 function parseDate(dateString)
 {
-    const dateParts = dateString.split('.');
-    const day = dateParts[1];
-    const month = dateParts[0];
-    const year = dateParts[2];
-
-    // Kombiniere die Teile im Format JJJJ-MM-DD
-    const formattedDate = `${year}-${month}-${day}`;
-
-    return formattedDate;
+    const [day, month, year] = dateString.split('.');
+    return `${year}-${month}-${day}`;
 }

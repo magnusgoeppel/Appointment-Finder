@@ -157,13 +157,19 @@ function submitVote(appointmentId, username, comment, selectedDates, callback) {
 }
 function submitNewAppointment(event) {
     event.preventDefault();
+    function convertDateTimeFormat(dateTimeString) {
+        var _a = dateTimeString.split(', '), datePart = _a[0], timePart = _a[1];
+        var _b = datePart.split('.'), day = _b[0], month = _b[1], year = _b[2];
+        var _c = timePart.split(' '), time = _c[0], uhr = _c[1];
+        return "".concat(year, "-").concat(month, "-").concat(day, ", ").concat(time, ".00 ").concat(uhr);
+    }
     var title = $("#title").val();
     var location = $("#location").val();
     var description = $("#description").val();
     var duration = $("#duration").val();
-    var options = $("#options").val();
-    var expiry_date = $("#expiry_date").val();
-    var selectable_dates = $("#selectable_dates").val();
+    var selectable_dates_unformed = $("#selectable_dates").val();
+    var selectable_dates = typeof selectable_dates_unformed === 'string' ? selectable_dates_unformed.split('\n').map(function (dateTimeString) { return convertDateTimeFormat(dateTimeString); }).join('\n') : '';
+    var expiry_date = parseDate($("#expiry_date").val());
     var data = {
         method: "createNewAppointment",
         param: {
@@ -171,13 +177,13 @@ function submitNewAppointment(event) {
             location: location,
             description: description,
             duration: duration,
-            options: options,
-            expiry_date: expiry_date,
             selectable_dates: selectable_dates,
+            expiry_date: expiry_date,
         },
     };
+    console.log(data);
     $.ajax({
-        url: "serviceHandler.php",
+        url: "../../backend/serviceHandler.php",
         type: "GET",
         data: data,
         dataType: "json",
@@ -194,11 +200,6 @@ function parseGermanDate(dateString) {
     return new Date(year, month - 1, day);
 }
 function parseDate(dateString) {
-    var dateParts = dateString.split('.');
-    var day = dateParts[1];
-    var month = dateParts[0];
-    var year = dateParts[2];
-    // Kombiniere die Teile im Format JJJJ-MM-DD
-    var formattedDate = "".concat(year, "-").concat(month, "-").concat(day);
-    return formattedDate;
+    var _a = dateString.split('.'), day = _a[0], month = _a[1], year = _a[2];
+    return "".concat(year, "-").concat(month, "-").concat(day);
 }
