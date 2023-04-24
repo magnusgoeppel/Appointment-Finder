@@ -178,12 +178,13 @@ function updateAppointmentDetails(appointmentId, details, status) {
 <ul class="list-group">
 `;
 
-    for (const userVote of details.user_votes)
-    {
+    const uniqueUsernames = {};
+
+    for (const userVote of details.user_votes) {
         const hasComment = userVote.comment.trim() !== '';
 
-        if (hasComment)
-        {
+        if (hasComment && !uniqueUsernames[userVote.username]) {
+            uniqueUsernames[userVote.username] = true;
             output += `
         <li class="list-group-item">
             <strong>${userVote.username}:</strong>
@@ -192,8 +193,9 @@ function updateAppointmentDetails(appointmentId, details, status) {
         </li>
         `;
         }
-
     }
+
+
 
     $(`.details-row[data-appointment-id="${appointmentId}"] .appointment-details`).html(output);
 

@@ -95,10 +95,12 @@ function updateAppointmentDetails(appointmentId, details, status) {
     output += "     </div></div><div>\n    </div></form>";
     output += '</ul><br/>';
     output += "\n            <h4 class\"card-title\">Kommentare</h4>\n<ul class=\"list-group\">\n";
+    var uniqueUsernames = {};
     for (var _d = 0, _e = details.user_votes; _d < _e.length; _d++) {
         var userVote = _e[_d];
         var hasComment = userVote.comment.trim() !== '';
-        if (hasComment) {
+        if (hasComment && !uniqueUsernames[userVote.username]) {
+            uniqueUsernames[userVote.username] = true;
             output += "\n        <li class=\"list-group-item\">\n            <strong>".concat(userVote.username, ":</strong>\n            <br>\n            <span class=\"user-comment\">").concat(userVote.comment, "</span>\n        </li>\n        ");
         }
     }
