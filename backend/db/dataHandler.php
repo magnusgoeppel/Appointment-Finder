@@ -169,7 +169,8 @@ class DataHandler
         $selectable_dates_array = explode(",", $selectable_dates);
 
         // Solange $selectable_dates_array Elemente enthält
-        for ($i = 0; $i < count($selectable_dates_array); $i += 2) {
+        for ($i = 0; $i < count($selectable_dates_array); $i += 2)
+        {
             $date = $selectable_dates_array[$i];
             $time = $selectable_dates_array[$i + 1];
 

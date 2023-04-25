@@ -44,10 +44,12 @@ function displayAppointments(appointments)
     for (const appointment of appointments)
     {
         let status = "Offen";
+        let statusBool = false;
         const currentDate = new Date();
         const expiryDate = parseGermanDate(appointment.expiry_date);
         console.log(currentDate);
         console.log(expiryDate);
+
 
         if (currentDate > expiryDate)
         {
@@ -75,7 +77,8 @@ function displayAppointments(appointments)
     $(".appointments-list").html(output);
 
     // Event Listener zum Klicken auf das Bild hinzufügen
-    $('.toggle-details').click(function () {
+    $('.toggle-details').click(function ()
+    {
         const appointmentId = $(this).data('appointment-id');
         const detailsRow = $(`.details-row[data-appointment-id="${appointmentId}"]`);
 
@@ -103,7 +106,9 @@ function displayAppointments(appointments)
 function loadAppointmentDetails(appointmentId)
 {
     const detailsRow = $(`.details-row[data-appointment-id="${appointmentId}"]`);
-    const status = detailsRow.prev('.appointment-row').find('td:last-child').text();
+    const status = detailsRow.prev('.appointment-row').find('td:nth-last-child(2)').text();
+
+    console.log(status);
 
     $.ajax({
         url: '../../backend/serviceHandler.php',
@@ -147,7 +152,7 @@ function loadAppointmentDetails(appointmentId)
 
 function updateAppointmentDetails(appointmentId, details, status)
 {
-    let isExpired = status === "Abgelaufen";
+    let isExpired = false;
     let output = '<div class="card"> <div class="card-body"> <h4 class="card-title">Voting</h4> <ul class="list-group"> ';
 
     for (const selectableDate of details.selectable_dates)
@@ -199,7 +204,9 @@ function updateAppointmentDetails(appointmentId, details, status)
 
     output += `</form>`;
 
-    if (isExpired) {
+
+    if ( status === "Abgelaufen")
+    {
         output += `<div class="alert alert-warning" role="alert">Dieser Termin ist abgelaufen. Abstimmung nicht mehr möglich.</div>`;
     } else {
         output += `<button type="button" id="submit-vote-${appointmentId}" class="btn btn-primary" disabled>Abstimmen</button>`;

@@ -26,6 +26,7 @@ function displayAppointments(appointments) {
     for (var _i = 0, appointments_1 = appointments; _i < appointments_1.length; _i++) {
         var appointment = appointments_1[_i];
         var status_1 = "Offen";
+        var statusBool = false;
         var currentDate = new Date();
         var expiryDate = parseGermanDate(appointment.expiry_date);
         console.log(currentDate);
@@ -60,7 +61,8 @@ function displayAppointments(appointments) {
 }
 function loadAppointmentDetails(appointmentId) {
     var detailsRow = $(".details-row[data-appointment-id=\"".concat(appointmentId, "\"]"));
-    var status = detailsRow.prev('.appointment-row').find('td:last-child').text();
+    var status = detailsRow.prev('.appointment-row').find('td:nth-last-child(2)').text();
+    console.log(status);
     $.ajax({
         url: '../../backend/serviceHandler.php',
         method: 'GET',
@@ -98,7 +100,7 @@ function loadAppointmentDetails(appointmentId) {
     document.getElementById("new-appointment-btn").addEventListener("click", submitNewAppointment);
 }*/
 function updateAppointmentDetails(appointmentId, details, status) {
-    var isExpired = status === "Abgelaufen";
+    var isExpired = false;
     var output = '<div class="card"> <div class="card-body"> <h4 class="card-title">Voting</h4> <ul class="list-group"> ';
     for (var _i = 0, _a = details.selectable_dates; _i < _a.length; _i++) {
         var selectableDate = _a[_i];
@@ -113,7 +115,7 @@ function updateAppointmentDetails(appointmentId, details, status) {
     output += "</div>";
     output += "\n        </select>\n        </div>\n        <div class=\"mb-3\">\n            <label for=\"comment-".concat(appointmentId, "\" class=\"form-label\">Kommentare</label>\n            <textarea class=\"form-control\" id=\"comment-").concat(appointmentId, "\" name=\"comment\" rows=\"3\" placeholder=\"optional\" ").concat(isExpired ? 'disabled' : '', "></textarea>\n        </div>");
     output += "</form>";
-    if (isExpired) {
+    if (status === "Abgelaufen") {
         output += "<div class=\"alert alert-warning\" role=\"alert\">Dieser Termin ist abgelaufen. Abstimmung nicht mehr m\u00F6glich.</div>";
     }
     else {
