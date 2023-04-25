@@ -130,7 +130,7 @@ function loadAppointmentDetails(appointmentId)
     });
 }
 
-/*function checkFormNewAppointment()
+function checkFormNewAppointment()
 {
     const title = $("#title").val();
     const location = $("#location").val();
@@ -146,9 +146,9 @@ function loadAppointmentDetails(appointmentId)
     {
         $("#new-appointment-btn").prop("disabled", true);
     }
-    $("#title, #location, #description, #duration, #selectable_dates, #expiry_date").on("input", checkFormNewAppointment);
+    //$("#title, #location, #description, #duration, #selectable_dates, #expiry_date").on("input", checkFormNewAppointment);
     document.getElementById("new-appointment-btn").addEventListener("click", submitNewAppointment);
-}*/
+}
 
 function updateAppointmentDetails(appointmentId, details, status)
 {
@@ -250,7 +250,8 @@ function updateAppointmentDetails(appointmentId, details, status)
         let comment = $(`#comment-${appointmentId}`).val();
         let selectedDates = [];
 
-        $(`.date-checkbox-${appointmentId}:checked`).each(function () {
+        $(`.date-checkbox-${appointmentId}:checked`).each(function ()
+        {
             let date = $(this).data('date');
             let parsedDate = parseDate(date);
             let time = $(this).data('time');
@@ -356,12 +357,13 @@ function submitNewAppointment(event)
         success: function (result)
         {
             console.log(result);
+            alert("Neues Appointment erfolgreich erstellt!");
         },
         error: function (xhr, status, error)
         {
             console.error("Error:", error , "Status:", status, "xhr:", xhr);
             console.log("Raw response:", xhr.responseText);
-            alert("Fehler beim Speichern des Termins. Bitte versuchen Sie es erneut.");
+            alert("Fehler beim Speichern des Appointments. Bitte versuchen Sie es erneut.");
         },
     });
 }
@@ -385,31 +387,24 @@ function deleteAppointment(appointmentId)
     const data=
         {
             method: 'deleteAppointment',
-            param: appointmentId
+            param: {appointmentId}
         }
+        console.log(data);
     $.ajax({
         url: '../../backend/serviceHandler.php',
         method: 'GET',
         data: data,
 
         dataType: 'json',
-        success: function (data)
+        success: function ()
         {
-            if (data.success)
-            {
-                // Entferne den gelöschten Termin aus der Liste
-                $(`.appointment-row[data-appointment-id="${appointmentId}"]`).remove();
-                $(`.details-row[data-appointment-id="${appointmentId}"]`).remove();
-                alert('Termin erfolgreich gelöscht.');
-            }
-            else
-            {
-                alert('Fehler beim Löschen des Termins. Bitte versuchen Sie es später erneut.');
-            }
+            alert('Termin erfolgreich gelöscht.');
+
         },
         error: function (jqXHR, textStatus, errorThrown)
         {
             console.error('Error: ' + jqXHR, textStatus, errorThrown);
+            console.log('Raw response:', jqXHR.responseText);
             alert('Fehler beim Löschen des Termins. Bitte versuchen Sie es später erneut.');
         }
     });

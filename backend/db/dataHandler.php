@@ -201,5 +201,7 @@ class DataHandler
 
         $sql = "DELETE FROM user_votes WHERE fk_appointment_id = '$appointment_id'";
         $db->query($sql);
+
+        return ['status' => 'success'];
     }
 }

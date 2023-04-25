@@ -80,25 +80,22 @@ function loadAppointmentDetails(appointmentId) {
         }
     });
 }
-/*function checkFormNewAppointment()
-{
-    const title = $("#title").val();
-    const location = $("#location").val();
-    const description = $("#description").val();
-    const duration = $("#duration").val();
-    const selectable_dates = $("#selectable_dates").val();
-    const expiry_date = $("#expiry_date").val();
-
+function checkFormNewAppointment() {
+    var title = $("#title").val();
+    var location = $("#location").val();
+    var description = $("#description").val();
+    var duration = $("#duration").val();
+    var selectable_dates = $("#selectable_dates").val();
+    var expiry_date = $("#expiry_date").val();
     if (title && location && description && duration && selectable_dates && expiry_date) {
         $("#new-appointment-btn").prop("disabled", false);
     }
-    else
-    {
+    else {
         $("#new-appointment-btn").prop("disabled", true);
     }
-    $("#title, #location, #description, #duration, #selectable_dates, #expiry_date").on("input", checkFormNewAppointment);
+    //$("#title, #location, #description, #duration, #selectable_dates, #expiry_date").on("input", checkFormNewAppointment);
     document.getElementById("new-appointment-btn").addEventListener("click", submitNewAppointment);
-}*/
+}
 function updateAppointmentDetails(appointmentId, details, status) {
     var isExpired = false;
     var output = '<div class="card"> <div class="card-body"> <h4 class="card-title">Voting</h4> <ul class="list-group"> ';
@@ -220,11 +217,12 @@ function submitNewAppointment(event) {
         dataType: "json",
         success: function (result) {
             console.log(result);
+            alert("Neues Appointment erfolgreich erstellt!");
         },
         error: function (xhr, status, error) {
             console.error("Error:", error, "Status:", status, "xhr:", xhr);
             console.log("Raw response:", xhr.responseText);
-            alert("Fehler beim Speichern des Termins. Bitte versuchen Sie es erneut.");
+            alert("Fehler beim Speichern des Appointments. Bitte versuchen Sie es erneut.");
         },
     });
 }
@@ -239,26 +237,20 @@ function parseDate(dateString) {
 function deleteAppointment(appointmentId) {
     var data = {
         method: 'deleteAppointment',
-        param: appointmentId
+        param: { appointmentId: appointmentId }
     };
+    console.log(data);
     $.ajax({
         url: '../../backend/serviceHandler.php',
         method: 'GET',
         data: data,
         dataType: 'json',
-        success: function (data) {
-            if (data.success) {
-                // Entferne den gelöschten Termin aus der Liste
-                $(".appointment-row[data-appointment-id=\"".concat(appointmentId, "\"]")).remove();
-                $(".details-row[data-appointment-id=\"".concat(appointmentId, "\"]")).remove();
-                alert('Termin erfolgreich gelöscht.');
-            }
-            else {
-                alert('Fehler beim Löschen des Termins. Bitte versuchen Sie es später erneut.');
-            }
+        success: function () {
+            alert('Termin erfolgreich gelöscht.');
         },
         error: function (jqXHR, textStatus, errorThrown) {
             console.error('Error: ' + jqXHR, textStatus, errorThrown);
+            console.log('Raw response:', jqXHR.responseText);
             alert('Fehler beim Löschen des Termins. Bitte versuchen Sie es später erneut.');
         }
     });
