@@ -21,7 +21,7 @@ function loadAppointments() {
     });
 }
 function displayAppointments(appointments) {
-    var output = "<table class=\"table table-striped\">\n            <thead>\n                <tr>\n                    <th>Details</th>\n                    <th>ID</th>\n                    <th>Titel</th>\n                    <th>Ort</th>\n                    <th>Ablaufdatum des Votings</th>\n                    <th>Status</th>\n                </tr>\n            </thead>\n    <tbody>";
+    var output = "<table class=\"table table-striped\">\n            <thead>\n                <tr>\n                    <th>Details</th>\n                    <th>Titel</th>\n                    <th Ort</th>\n                    <th class=\"shift-left\">Ablaufdatum des Votings</th>\n                    <th>Status</th>\n                </tr>\n            </thead>\n    <tbody>";
     for (var _i = 0, appointments_1 = appointments; _i < appointments_1.length; _i++) {
         var appointment = appointments_1[_i];
         var status_1 = "Offen";
@@ -30,7 +30,7 @@ function displayAppointments(appointments) {
         if (currentDate > expiryDate) {
             status_1 = "Abgelaufen";
         }
-        output += "\n            <tr class=\"appointment-row\" data-appointment-id=\"".concat(appointment.id, "\">\n                <td><img class=\"toggle-details\" data-appointment-id=\"").concat(appointment.id, "\" src=\"img/expand.png\" alt=\"Toggle details\"></td>\n                <td>").concat(appointment.id, "</td>\n                <td>").concat(appointment.title, "</td>\n                <td>").concat(appointment.location, "</td>\n                <td>").concat(appointment.expiry_date, "</td>\n                <td>").concat(status_1, "</td>\n            </tr>\n            <tr class=\"details-row\" data-appointment-id=\"").concat(appointment.id, "\" style=\"display: none;\">\n                <td colspan=\"7\">\n                    <div class=\"appointment-details\"></div>\n                </td>\n            </tr>\n        ");
+        output += "\n            <tr class=\"appointment-row\" data-appointment-id=\"".concat(appointment.id, "\">\n                <td><img class=\"toggle-details\" data-appointment-id=\"").concat(appointment.id, "\" src=\"img/expand.png\" alt=\"Toggle details\"></td>\n                <td>").concat(appointment.title, "</td>\n                <td>").concat(appointment.location, "</td>\n                <td>").concat(appointment.expiry_date, "</td>\n                <td>").concat(status_1, "</td>\n            </tr>\n            <tr class=\"details-row\" data-appointment-id=\"").concat(appointment.id, "\" style=\"display: none;\">\n                <td colspan=\"7\">\n                    <div class=\"appointment-details\"></div>\n                </td>\n            </tr>\n        ");
     }
     output += "</tbody>" +
         "</table>";
@@ -191,7 +191,8 @@ function submitNewAppointment(event) {
             console.log(result);
         },
         error: function (xhr, status, error) {
-            console.error("Error:", error);
+            console.error("Error:", error, "Status:", status, "xhr:", xhr);
+            console.log("Raw response:", xhr.responseText);
         },
     });
 }

@@ -3,3 +3,9 @@
     width: 20%;
     height: 20%;
 }
+
+.shift-left
+{
+    text-indent: -40px;
+}
+

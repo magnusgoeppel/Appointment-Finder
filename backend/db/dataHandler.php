@@ -155,6 +155,7 @@ class DataHandler
         $location = $data["location"];
         $description = $data["description"];
         $duration = $data["duration"];
+        //echo 'duration: ' . $duration . "\n";
         $selectable_dates = $data["selectable_dates"];
         $expiry_date = $data["expiry_date"];
 
@@ -170,19 +171,19 @@ class DataHandler
         $sql = "INSERT INTO appointments (title, location, description, duration, expiry_date) VALUES ('$title', '$location', '$description', '$duration', '$expiry_date')";
         $db->query($sql);
 
-        //$appointment_id = $db->getLastInsertedId();
+        $appointment_id = $db->getLastInsertedId();
 
         $selectable_dates = str_replace(" Uhr", "", $selectable_dates);
-        echo $selectable_dates . "\n";
+        //echo $selectable_dates . "\n";
 
         $selectable_dates = str_replace(["\n", "\r\n", "\r", "\\n"], ",", $selectable_dates);
-        echo $selectable_dates . "\n";
+        //echo $selectable_dates . "\n";
 
         // Teile den String in ein Array
         $selectable_dates_array = explode(",", $selectable_dates);
-        echo "selectable_dates_array: ";
-        print_r($selectable_dates_array);
-        echo "\n";
+        //echo "selectable_dates_array: ";
+        //print_r($selectable_dates_array);
+        //echo "\n";
 
         // Solange $selectable_dates_array Elemente enthält
         for ($i = 0; $i < count($selectable_dates_array); $i += 2) {
@@ -193,10 +194,11 @@ class DataHandler
             $time = str_replace(" ", "", $time);
             $time = str_replace(".", ":", $time);
 
-            echo "date: " . $date . "\n";
-            echo "time: " . $time . "\n";
+            //echo "date: " . $date . "\n";
+            //echo "time: " . $time . "\n";
 
             $sql = "INSERT INTO selectable_dates (fk_appointment_id, date, time) VALUES ('$appointment_id', '$date', '$time')";
+            $db->query($sql);
         }
         return ['status' => 'success'];
 

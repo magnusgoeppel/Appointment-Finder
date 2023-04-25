@@ -24,7 +24,7 @@
 
         <!-- Modal -->
         <div class="modal fade" id="newAppointmentModal" tabindex="-1" aria-labelledby="newAppointmentModalLabel" aria-hidden="true">
-            <div class="modal-dialog">
+            <div class="modal-dialog modal-lg">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title" id="newAppointmentModalLabel">Neues Appointment</h5>
@@ -49,11 +49,11 @@
                                 <input type="number" class="form-control" id="duration" name="duration" min="1" required>
                             </div>
                             <div class="mb-3">
-                                <label for="selectable_dates" class="form-label">Terminoptionen (ein Datum pro Zeile im Format TT.MM.JJJJ)</label>
+                                <label for="selectable_dates" class="form-label">Terminoptionen (ein Datum pro Zeile im Format DD.MM.JJJJ, HH.MM Uhr)</label>
                                 <textarea class="form-control" id="selectable_dates" name="selectable_dates" rows="5" required></textarea>
                             </div>
                             <div class="mb-3">
-                                <label for="expiry_date" class="form-label">Ablaufdatum des Votings</label>
+                                <label for="expiry_date" class="form-label">Ablaufdatum des Votings (ein Datum in der Form DD.MM.JJJ</label>
                                 <input type="text" class="form-control" id="expiry_date" name="location" required>
                             </div>
                             <div class="modal-footer">

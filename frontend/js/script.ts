@@ -30,10 +30,9 @@ function displayAppointments(appointments)
             <thead>
                 <tr>
                     <th>Details</th>
-                    <th>ID</th>
                     <th>Titel</th>
-                    <th>Ort</th>
-                    <th>Ablaufdatum des Votings</th>
+                    <th Ort</th>
+                    <th class="shift-left">Ablaufdatum des Votings</th>
                     <th>Status</th>
                 </tr>
             </thead>
@@ -51,7 +50,6 @@ function displayAppointments(appointments)
         output += `
             <tr class="appointment-row" data-appointment-id="${appointment.id}">
                 <td><img class="toggle-details" data-appointment-id="${appointment.id}" src="img/expand.png" alt="Toggle details"></td>
-                <td>${appointment.id}</td>
                 <td>${appointment.title}</td>
                 <td>${appointment.location}</td>
                 <td>${appointment.expiry_date}</td>
@@ -311,7 +309,8 @@ function submitNewAppointment(event)
         },
         error: function (xhr, status, error)
         {
-            console.error("Error:", error);
+            console.error("Error:", error , "Status:", status, "xhr:", xhr);
+            console.log("Raw response:", xhr.responseText);
         },
     });
 }
