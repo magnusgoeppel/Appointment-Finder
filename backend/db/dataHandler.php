@@ -1,6 +1,6 @@
 <?php
 include( __DIR__ . '/../models/appointment.php');
-include(__DIR__ . '/../models/userVote.php');
+//include(__DIR__ . '/../models/userVote.php');
 include(__DIR__ . '/db.php');
 
 class DataHandler
@@ -15,15 +15,13 @@ class DataHandler
         $db = new DB();
         $result = $db->query("SELECT * FROM appointments");
 
-        if (!$result)
-        {
+        if (!$result) {
             return false;
         }
         $appointments = [];
 
 
         foreach ($result as $row) {
-
             $expiryDate = new DateTime($row['expiry_date']);
             $formattedExpiryDate = $expiryDate->format('d.m.Y');
 
@@ -43,10 +41,7 @@ class DataHandler
         $selectable_dates = $this->getSelectableDates($appointment_id);
         $user_votes = $this->getUserVotes($appointment_id);
 
-        return [
-            'selectable_dates' => $selectable_dates,
-            'user_votes' => $user_votes,
-        ];
+        return ['selectable_dates' => $selectable_dates, 'user_votes' => $user_votes, 'appointment_id' => $appointment_id];
     }
 
     private function getSelectableDates($appointment_id)
@@ -54,11 +49,10 @@ class DataHandler
         $db = new DB();
         $appointment_id = $db->escape($appointment_id);
         $result = $db->query("SELECT selectable_dates.id, selectable_dates.date, selectable_dates.time, COUNT(user_selected_dates.id) as votes
-                      FROM selectable_dates
-                      LEFT JOIN user_selected_dates ON selectable_dates.id = user_selected_dates.fk_selectable_dates_id
-                      WHERE selectable_dates.fk_appointment_id = '$appointment_id'
-                      GROUP BY selectable_dates.id, selectable_dates.date, selectable_dates.time");
-
+                                  FROM selectable_dates
+                                  LEFT JOIN user_selected_dates ON selectable_dates.id = user_selected_dates.fk_selectable_dates_id
+                                  WHERE selectable_dates.fk_appointment_id = '$appointment_id'
+                                  GROUP BY selectable_dates.id, selectable_dates.date, selectable_dates.time");
 
         if (!$result) {
             return false;
@@ -68,7 +62,6 @@ class DataHandler
             $row['date'] = $datetime->format('d.m.Y');
             $row['time'] = $datetime->format('H:i');
         }
-
 
         return $result;
     }
@@ -84,7 +77,6 @@ class DataHandler
                                   WHERE uv.fk_appointment_id = '$appointment_id'");
 
 
-
         if (!$result) {
             return false;
         }
@@ -93,7 +85,6 @@ class DataHandler
             $row['selected_date'] = $datetime->format('d.m.Y');
             $row['selected_time'] = $datetime->format('H:i');
         }
-
         return $result;
     }
 
@@ -130,8 +121,7 @@ class DataHandler
             $sql = "SELECT id FROM selectable_dates WHERE fk_appointment_id = '$appointment_id' AND date = '$date' AND time = '$time'";
             $result = $db->query($sql);
 
-            if ($result)
-            {
+            if ($result) {
                 $selectable_dates_id = $result[0]['id'];
 
                 // Insert the record into user_selected_dates table
@@ -145,7 +135,6 @@ class DataHandler
 
     public function createNewAppointment($data)
     {
-
         return $this->getCreateNewAppointment($data);
     }
 
@@ -155,7 +144,6 @@ class DataHandler
         $location = $data["location"];
         $description = $data["description"];
         $duration = $data["duration"];
-        //echo 'duration: ' . $duration . "\n";
         $selectable_dates = $data["selectable_dates"];
         $expiry_date = $data["expiry_date"];
 
@@ -174,16 +162,11 @@ class DataHandler
         $appointment_id = $db->getLastInsertedId();
 
         $selectable_dates = str_replace(" Uhr", "", $selectable_dates);
-        //echo $selectable_dates . "\n";
 
         $selectable_dates = str_replace(["\n", "\r\n", "\r", "\\n"], ",", $selectable_dates);
-        //echo $selectable_dates . "\n";
 
         // Teile den String in ein Array
         $selectable_dates_array = explode(",", $selectable_dates);
-        //echo "selectable_dates_array: ";
-        //print_r($selectable_dates_array);
-        //echo "\n";
 
         // Solange $selectable_dates_array Elemente enthält
         for ($i = 0; $i < count($selectable_dates_array); $i += 2) {
@@ -194,16 +177,28 @@ class DataHandler
             $time = str_replace(" ", "", $time);
             $time = str_replace(".", ":", $time);
 
-            //echo "date: " . $date . "\n";
-            //echo "time: " . $time . "\n";
-
             $sql = "INSERT INTO selectable_dates (fk_appointment_id, date, time) VALUES ('$appointment_id', '$date', '$time')";
             $db->query($sql);
         }
         return ['status' => 'success'];
-
-
-
     }
 
+    function deleteAppointment($data)
+    {
+        $appointment_id = $data["appointmentId"];
+        //echo 'appointment_id: ' . $appointment_id;
+
+        $db = new DB();
+
+        $appointment_id = $db->escape($appointment_id);
+
+        $sql = "DELETE FROM appointments WHERE id = '$appointment_id' ";
+        $db->query($sql);
+
+        $sql = "DELETE FROM selectable_dates WHERE fk_appointment_id = '$appointment_id'";
+        $db->query($sql);
+
+        $sql = "DELETE FROM user_votes WHERE fk_appointment_id = '$appointment_id'";
+        $db->query($sql);
+    }
 }

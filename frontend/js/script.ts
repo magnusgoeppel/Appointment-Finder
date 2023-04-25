@@ -1,10 +1,12 @@
 $(document).ready(function ()
 {
     loadAppointments();
+    //checkFormNewAppointment();
     document.getElementById("new-appointment-btn").addEventListener("click", submitNewAppointment);
 });
 
-function loadAppointments() {
+function loadAppointments()
+{
     $.ajax({
         url: '../../backend/serviceHandler.php',
         method: 'GET',
@@ -31,17 +33,21 @@ function displayAppointments(appointments)
                 <tr>
                     <th>Details</th>
                     <th>Titel</th>
-                    <th Ort</th>
+                    <th>Ort</th>
                     <th class="shift-left">Ablaufdatum des Votings</th>
                     <th>Status</th>
+                    <th class="shift-left_light">Löschen</th>
                 </tr>
             </thead>
     <tbody>`;
+
     for (const appointment of appointments)
     {
         let status = "Offen";
         const currentDate = new Date();
         const expiryDate = parseGermanDate(appointment.expiry_date);
+        console.log(currentDate);
+        console.log(expiryDate);
 
         if (currentDate > expiryDate)
         {
@@ -54,6 +60,7 @@ function displayAppointments(appointments)
                 <td>${appointment.location}</td>
                 <td>${appointment.expiry_date}</td>
                 <td>${status}</td>
+                <td><img class="deletePic" id="${appointment.id}" src="img/delete.png"></td>
             </tr>
             <tr class="details-row" data-appointment-id="${appointment.id}" style="display: none;">
                 <td colspan="7">
@@ -72,18 +79,29 @@ function displayAppointments(appointments)
         const appointmentId = $(this).data('appointment-id');
         const detailsRow = $(`.details-row[data-appointment-id="${appointmentId}"]`);
 
-        if (detailsRow.is(':visible')) {
+        if (detailsRow.is(':visible'))
+        {
             detailsRow.hide();
             $(this).attr('src', 'img/expand.png'); // Ändere das Bild zu "expand.png", wenn die Detailansicht geschlossen ist
-        } else {
+        }
+        else
+        {
             detailsRow.show();
             $(this).attr('src', 'img/collapse.png'); // Ändere das Bild zu "collapse.png", wenn die Detailansicht geöffnet ist
             loadAppointmentDetails(appointmentId);
         }
     });
+
+    $('.deletePic').click(function ()
+    {
+        const deleteAppointmentId = this.id;
+        console.log(deleteAppointmentId);
+        deleteAppointment(deleteAppointmentId);
+    });
 }
 
-function loadAppointmentDetails(appointmentId) {
+function loadAppointmentDetails(appointmentId)
+{
     const detailsRow = $(`.details-row[data-appointment-id="${appointmentId}"]`);
     const status = detailsRow.prev('.appointment-row').find('td:last-child').text();
 
@@ -105,14 +123,35 @@ function loadAppointmentDetails(appointmentId) {
             $('.appointments-list').html(html);
         }
     });
-
-
 }
 
-function updateAppointmentDetails(appointmentId, details, status) {
+/*function checkFormNewAppointment()
+{
+    const title = $("#title").val();
+    const location = $("#location").val();
+    const description = $("#description").val();
+    const duration = $("#duration").val();
+    const selectable_dates = $("#selectable_dates").val();
+    const expiry_date = $("#expiry_date").val();
+
+    if (title && location && description && duration && selectable_dates && expiry_date) {
+        $("#new-appointment-btn").prop("disabled", false);
+    }
+    else
+    {
+        $("#new-appointment-btn").prop("disabled", true);
+    }
+    $("#title, #location, #description, #duration, #selectable_dates, #expiry_date").on("input", checkFormNewAppointment);
+    document.getElementById("new-appointment-btn").addEventListener("click", submitNewAppointment);
+}*/
+
+function updateAppointmentDetails(appointmentId, details, status)
+{
     let isExpired = status === "Abgelaufen";
     let output = '<div class="card"> <div class="card-body"> <h4 class="card-title">Voting</h4> <ul class="list-group"> ';
-    for (const selectableDate of details.selectable_dates) {
+
+    for (const selectableDate of details.selectable_dates)
+    {
         output += `
         <li class="list-group-item">
             ${selectableDate.date}    
@@ -224,7 +263,9 @@ function updateAppointmentDetails(appointmentId, details, status) {
         if ($(this).val() && !isExpired)
         {
             $(`#submit-vote-${appointmentId}`).prop('disabled', false);
-        } else {
+        }
+        else
+        {
             $(`#submit-vote-${appointmentId}`).prop('disabled', true);
         }
     });
@@ -252,10 +293,12 @@ function updateAppointmentDetails(appointmentId, details, status) {
             }
             console.log('Ihre Abstimmung wurde erfolgreich gespeichert!');
             console.log(response);
+            alert('Ihre Abstimmung wurde erfolgreich gespeichert!');
         },
         error: function ()
         {
             console.error('Fehler beim Speichern Ihrer Abstimmung. Bitte versuchen Sie es erneut.');
+            alert('Fehler beim Speichern Ihrer Abstimmung. Bitte versuchen Sie es erneut.');
         }
     });
 }
@@ -311,6 +354,7 @@ function submitNewAppointment(event)
         {
             console.error("Error:", error , "Status:", status, "xhr:", xhr);
             console.log("Raw response:", xhr.responseText);
+            alert("Fehler beim Speichern des Termins. Bitte versuchen Sie es erneut.");
         },
     });
 }
@@ -327,4 +371,39 @@ function parseDate(dateString)
 {
     const [day, month, year] = dateString.split('.');
     return `${year}-${month}-${day}`;
+}
+
+function deleteAppointment(appointmentId)
+{
+    const data=
+        {
+            method: 'deleteAppointment',
+            param: appointmentId
+        }
+    $.ajax({
+        url: '../../backend/serviceHandler.php',
+        method: 'GET',
+        data: data,
+
+        dataType: 'json',
+        success: function (data)
+        {
+            if (data.success)
+            {
+                // Entferne den gelöschten Termin aus der Liste
+                $(`.appointment-row[data-appointment-id="${appointmentId}"]`).remove();
+                $(`.details-row[data-appointment-id="${appointmentId}"]`).remove();
+                alert('Termin erfolgreich gelöscht.');
+            }
+            else
+            {
+                alert('Fehler beim Löschen des Termins. Bitte versuchen Sie es später erneut.');
+            }
+        },
+        error: function (jqXHR, textStatus, errorThrown)
+        {
+            console.error('Error: ' + jqXHR, textStatus, errorThrown);
+            alert('Fehler beim Löschen des Termins. Bitte versuchen Sie es später erneut.');
+        }
+    });
 }

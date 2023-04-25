@@ -1,5 +1,6 @@
 $(document).ready(function () {
     loadAppointments();
+    //checkFormNewAppointment();
     document.getElementById("new-appointment-btn").addEventListener("click", submitNewAppointment);
 });
 function loadAppointments() {
@@ -21,16 +22,18 @@ function loadAppointments() {
     });
 }
 function displayAppointments(appointments) {
-    var output = "<table class=\"table table-striped\">\n            <thead>\n                <tr>\n                    <th>Details</th>\n                    <th>Titel</th>\n                    <th Ort</th>\n                    <th class=\"shift-left\">Ablaufdatum des Votings</th>\n                    <th>Status</th>\n                </tr>\n            </thead>\n    <tbody>";
+    var output = "<table class=\"table table-striped\">\n            <thead>\n                <tr>\n                    <th>Details</th>\n                    <th>Titel</th>\n                    <th>Ort</th>\n                    <th class=\"shift-left\">Ablaufdatum des Votings</th>\n                    <th>Status</th>\n                    <th class=\"shift-left_light\">L\u00F6schen</th>\n                </tr>\n            </thead>\n    <tbody>";
     for (var _i = 0, appointments_1 = appointments; _i < appointments_1.length; _i++) {
         var appointment = appointments_1[_i];
         var status_1 = "Offen";
         var currentDate = new Date();
         var expiryDate = parseGermanDate(appointment.expiry_date);
+        console.log(currentDate);
+        console.log(expiryDate);
         if (currentDate > expiryDate) {
             status_1 = "Abgelaufen";
         }
-        output += "\n            <tr class=\"appointment-row\" data-appointment-id=\"".concat(appointment.id, "\">\n                <td><img class=\"toggle-details\" data-appointment-id=\"").concat(appointment.id, "\" src=\"img/expand.png\" alt=\"Toggle details\"></td>\n                <td>").concat(appointment.title, "</td>\n                <td>").concat(appointment.location, "</td>\n                <td>").concat(appointment.expiry_date, "</td>\n                <td>").concat(status_1, "</td>\n            </tr>\n            <tr class=\"details-row\" data-appointment-id=\"").concat(appointment.id, "\" style=\"display: none;\">\n                <td colspan=\"7\">\n                    <div class=\"appointment-details\"></div>\n                </td>\n            </tr>\n        ");
+        output += "\n            <tr class=\"appointment-row\" data-appointment-id=\"".concat(appointment.id, "\">\n                <td><img class=\"toggle-details\" data-appointment-id=\"").concat(appointment.id, "\" src=\"img/expand.png\" alt=\"Toggle details\"></td>\n                <td>").concat(appointment.title, "</td>\n                <td>").concat(appointment.location, "</td>\n                <td>").concat(appointment.expiry_date, "</td>\n                <td>").concat(status_1, "</td>\n                <td><img class=\"deletePic\" id=\"").concat(appointment.id, "\" src=\"img/delete.png\"></td>\n            </tr>\n            <tr class=\"details-row\" data-appointment-id=\"").concat(appointment.id, "\" style=\"display: none;\">\n                <td colspan=\"7\">\n                    <div class=\"appointment-details\"></div>\n                </td>\n            </tr>\n        ");
     }
     output += "</tbody>" +
         "</table>";
@@ -48,6 +51,11 @@ function displayAppointments(appointments) {
             $(this).attr('src', 'img/collapse.png'); // Ändere das Bild zu "collapse.png", wenn die Detailansicht geöffnet ist
             loadAppointmentDetails(appointmentId);
         }
+    });
+    $('.deletePic').click(function () {
+        var deleteAppointmentId = this.id;
+        console.log(deleteAppointmentId);
+        deleteAppointment(deleteAppointmentId);
     });
 }
 function loadAppointmentDetails(appointmentId) {
@@ -70,6 +78,25 @@ function loadAppointmentDetails(appointmentId) {
         }
     });
 }
+/*function checkFormNewAppointment()
+{
+    const title = $("#title").val();
+    const location = $("#location").val();
+    const description = $("#description").val();
+    const duration = $("#duration").val();
+    const selectable_dates = $("#selectable_dates").val();
+    const expiry_date = $("#expiry_date").val();
+
+    if (title && location && description && duration && selectable_dates && expiry_date) {
+        $("#new-appointment-btn").prop("disabled", false);
+    }
+    else
+    {
+        $("#new-appointment-btn").prop("disabled", true);
+    }
+    $("#title, #location, #description, #duration, #selectable_dates, #expiry_date").on("input", checkFormNewAppointment);
+    document.getElementById("new-appointment-btn").addEventListener("click", submitNewAppointment);
+}*/
 function updateAppointmentDetails(appointmentId, details, status) {
     var isExpired = status === "Abgelaufen";
     var output = '<div class="card"> <div class="card-body"> <h4 class="card-title">Voting</h4> <ul class="list-group"> ';
@@ -149,9 +176,11 @@ function submitVote(appointmentId, username, comment, selectedDates, callback) {
             }
             console.log('Ihre Abstimmung wurde erfolgreich gespeichert!');
             console.log(response);
+            alert('Ihre Abstimmung wurde erfolgreich gespeichert!');
         },
         error: function () {
             console.error('Fehler beim Speichern Ihrer Abstimmung. Bitte versuchen Sie es erneut.');
+            alert('Fehler beim Speichern Ihrer Abstimmung. Bitte versuchen Sie es erneut.');
         }
     });
 }
@@ -193,6 +222,7 @@ function submitNewAppointment(event) {
         error: function (xhr, status, error) {
             console.error("Error:", error, "Status:", status, "xhr:", xhr);
             console.log("Raw response:", xhr.responseText);
+            alert("Fehler beim Speichern des Termins. Bitte versuchen Sie es erneut.");
         },
     });
 }
@@ -203,4 +233,31 @@ function parseGermanDate(dateString) {
 function parseDate(dateString) {
     var _a = dateString.split('.'), day = _a[0], month = _a[1], year = _a[2];
     return "".concat(year, "-").concat(month, "-").concat(day);
+}
+function deleteAppointment(appointmentId) {
+    var data = {
+        method: 'deleteAppointment',
+        param: appointmentId
+    };
+    $.ajax({
+        url: '../../backend/serviceHandler.php',
+        method: 'GET',
+        data: data,
+        dataType: 'json',
+        success: function (data) {
+            if (data.success) {
+                // Entferne den gelöschten Termin aus der Liste
+                $(".appointment-row[data-appointment-id=\"".concat(appointmentId, "\"]")).remove();
+                $(".details-row[data-appointment-id=\"".concat(appointmentId, "\"]")).remove();
+                alert('Termin erfolgreich gelöscht.');
+            }
+            else {
+                alert('Fehler beim Löschen des Termins. Bitte versuchen Sie es später erneut.');
+            }
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+            console.error('Error: ' + jqXHR, textStatus, errorThrown);
+            alert('Fehler beim Löschen des Termins. Bitte versuchen Sie es später erneut.');
+        }
+    });
 }

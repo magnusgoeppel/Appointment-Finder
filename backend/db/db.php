@@ -30,15 +30,21 @@ class DB
 
     public function query($sql)
     {
-
         $result = $this->connection->query($sql);
-        if ($result === TRUE) {
+
+        if ($result === TRUE)
+        {
             return $this->connection->insert_id;
-        } else if ($result === FALSE) {
+        } else if ($result === FALSE)
+        {
             return FALSE;
-        } else {
+        }
+        else
+        {
             $data = array();
-            while ($row = $result->fetch_assoc()) {
+
+            while ($row = $result->fetch_assoc())
+            {
                 $data[] = $row;
             }
             return $data;
@@ -47,6 +53,7 @@ class DB
 
     public function escape($value)
     {
+        //$value = strip_tags($value);
         return $this->connection->real_escape_string($value);
     }
 
