@@ -3,7 +3,7 @@ class DB
 {
     private $host = "localhost";
     private $user = "bif2webscriptinguser";
-    private $password = "bif2023";
+    private $password = "bif2021";
     private $database = "appointmentfinder";
     private $connection;
 
@@ -21,6 +21,7 @@ class DB
     private function connect()
     {
         $this->connection = new mysqli($this->host, $this->user, $this->password, $this->database);
+        $this->connection->set_charset("utf8");
 
         if ($this->connection->connect_error)
         {

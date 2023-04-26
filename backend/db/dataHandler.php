@@ -58,8 +58,10 @@ class DataHandler
     {
         $selectable_dates = $this->getSelectableDates($appointment_id);
         $user_votes = $this->getUserVotes($appointment_id);
+        $description = $this->getDescription($appointment_id);
+        $duration = $this->getDuration($appointment_id);
 
-        return ['selectable_dates' => $selectable_dates, 'user_votes' => $user_votes, 'appointment_id' => $appointment_id];
+        return ['selectable_dates' => $selectable_dates, 'user_votes' => $user_votes, 'appointment_id' => $appointment_id, 'description' => $description, 'duration' => $duration];
     }
 
     private function getSelectableDates($appointment_id)
@@ -112,6 +114,37 @@ class DataHandler
         return $result;
     }
 
+    private function getDescription($appointment_id)
+    {
+
+        $db = new DB();
+        $appointment_id = $db->escape($appointment_id);
+        $result = $db->query("SELECT description FROM appointments WHERE id = '$appointment_id'");
+
+        if (!$result)
+        {
+            $db->close();
+            return false;
+        }
+        $db->close();
+        return $result[0]['description'];
+    }
+
+    private function getDuration($appointment_id)
+    {
+        $db = new DB();
+        $appointment_id = $db->escape($appointment_id);
+        $result = $db->query("SELECT duration FROM appointments WHERE id = '$appointment_id'");
+
+        if (!$result)
+        {
+            $db->close();
+            return false;
+        }
+        $db->close();
+        return $result[0]['duration'];
+    }
+
     private function getSubmitUserVote($param)
     {
         $appointment_id = $param['appointment_id'];
@@ -149,6 +182,7 @@ class DataHandler
             }
         }
         $db->close();
+        return ['success' => true];
     }
 
     private function getCreateNewAppointment($data)
@@ -195,6 +229,7 @@ class DataHandler
             $db->query($sql);
         }
         $db->close();
+        return ['success' => true];
     }
 
     private function getDeleteAppointment($data)
@@ -215,5 +250,6 @@ class DataHandler
         $db->query($sql);
 
         $db->close();
+        return ['success' => true];
     }
 }

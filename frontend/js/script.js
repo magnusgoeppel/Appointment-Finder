@@ -1,11 +1,11 @@
 $(document).ready(function () {
+    // Lade die Termine
     loadAppointments();
-    // Registrieren Sie die Event-Listener hier
+    // Event Listener für den newAppointment-Button hinzufügen
     $("#title, #location, #description, #duration, #selectable_dates, #expiry_date").on("input", updateSubmitButtonState);
     document.getElementById("new-appointment-btn").addEventListener("click", submitNewAppointment);
-    // Aktualisieren Sie den Zustand des Buttons beim Laden der Seite
-    //updateSubmitButtonState();
 });
+// Lade die Termine
 function loadAppointments() {
     $.ajax({
         url: '../../backend/serviceHandler.php',
@@ -13,10 +13,11 @@ function loadAppointments() {
         data: { method: 'queryAppointments' },
         dataType: 'json',
         success: function (data) {
+            // Anzeigen der Appointments
             displayAppointments(data);
         },
         error: function (jqXHR, textStatus, errorThrown) {
-            //console.error('Error: ' + jqXHR, textStatus, errorThrown);
+            console.error('Error: ' + jqXHR, textStatus, errorThrown);
             var html = '<div class="alert alert-danger" role="alert">';
             html += 'Fehler beim Laden der Termine. Bitte versuchen Sie es später erneut.';
             html += '</div>';
@@ -24,8 +25,9 @@ function loadAppointments() {
         }
     });
 }
+// Anzeigen der Appointments
 function displayAppointments(appointments) {
-    var output = "<table class=\"table table-striped\">\n            <thead>\n                <tr>\n                    <th>Details</th>\n                    <th>ID</th>\n                    <th>Titel</th>\n                    <th>Ort</th>\n                    <th class=\"shift-left\">Ablaufdatum des Votings</th>\n                    <th>Status</th>\n                    <th class=\"shift-left_light\">L\u00F6schen</th>\n                </tr>\n            </thead>\n    <tbody>";
+    var output = "<table class=\"table table-striped\">\n            <thead>\n                <tr>\n                    <th>Details</th>\n                    <th>Titel</th>\n                    <th>Ort</th>\n                    <th class=\"shift-left\">Ablaufdatum des Votings</th>\n                    <th>Status</th>\n                    <th class=\"shift-left_light\">L\u00F6schen</th>\n                </tr>\n            </thead>\n    <tbody>";
     for (var _i = 0, appointments_1 = appointments; _i < appointments_1.length; _i++) {
         var appointment = appointments_1[_i];
         var status_1 = "Offen";
@@ -36,42 +38,47 @@ function displayAppointments(appointments) {
         if (currentDate > expiryDate) {
             status_1 = "Abgelaufen";
         }
-        output += "\n            <tr class=\"appointment-row\" data-appointment-id=\"".concat(appointment.id, "\">\n                <td><img class=\"toggle-details\" data-appointment-id=\"").concat(appointment.id, "\" src=\"img/expand.png\" alt=\"Toggle details\"></td>\n                <td>").concat(appointment.id, "</td>\n                <td>").concat(appointment.title, "</td>\n                <td>").concat(appointment.location, "</td>\n                <td>").concat(appointment.expiry_date, "</td>\n                <td>").concat(status_1, "</td>\n                <td><img class=\"deletePic\" id=\"").concat(appointment.id, "\" src=\"img/delete.png\"></td>\n            </tr>\n            <tr class=\"details-row\" data-appointment-id=\"").concat(appointment.id, "\" style=\"display: none;\">\n                <td colspan=\"7\">\n                    <div class=\"appointment-details\"></div>\n                </td>\n            </tr>\n        ");
+        output += "\n            <tr class=\"appointment-row\" data-appointment-id=\"".concat(appointment.id, "\">\n                <td><img class=\"toggle-details\" data-appointment-id=\"").concat(appointment.id, "\" src=\"img/expand.png\" alt=\"Toggle details\"></td>\n                <td>").concat(appointment.title, "</td>\n                <td>").concat(appointment.location, "</td>\n                <td>").concat(appointment.expiry_date, "</td>\n                <td>").concat(status_1, "</td>\n                <td><img class=\"deletePic\" id=\"").concat(appointment.id, "\" src=\"img/delete.png\"></td>\n            </tr>\n            <tr class=\"details-row\" data-appointment-id=\"").concat(appointment.id, "\" style=\"display: none;\">\n                <td colspan=\"7\">\n                    <div class=\"appointment-details\"></div>\n                </td>\n            </tr>\n        ");
     }
     output += "</tbody>" +
         "</table>";
     $(".appointments-list").html(output);
-    // Event Listener zum Klicken auf das Bild hinzufügen
+    // Event Listener zum Klicken auf die Details
     $('.toggle-details').click(function () {
         var appointmentId = $(this).data('appointment-id');
         var detailsRow = $(".details-row[data-appointment-id=\"".concat(appointmentId, "\"]"));
         if (detailsRow.is(':visible')) {
+            // Verstecke die Detailansicht
             detailsRow.hide();
             $(this).attr('src', 'img/expand.png'); // Ändere das Bild zu "expand.png", wenn die Detailansicht geschlossen ist
         }
         else {
+            // Zeige die Detailansicht an
             detailsRow.show();
-            $(this).attr('src', 'img/collapse.png'); // Ändere das Bild zu "collapse.png", wenn die Detailansicht geöffnet ist
+            // Ändere das Bild zu "collapse.png", wenn die Detailansicht geöffnet ist
+            $(this).attr('src', 'img/collapse.png');
             loadAppointmentDetails(appointmentId);
         }
     });
+    // Event Listener zum Klicken auf das Löschen eines Termins
     $('.deletePic').click(function () {
         var deleteAppointmentId = this.id;
         console.log(deleteAppointmentId);
         deleteAppointment(deleteAppointmentId);
     });
 }
+// Löschen eines Termins
 function loadAppointmentDetails(appointmentId) {
     var detailsRow = $(".details-row[data-appointment-id=\"".concat(appointmentId, "\"]"));
     var status = detailsRow.prev('.appointment-row').find('td:nth-last-child(2)').text();
-    var isExpired = status === "Abgelaufen";
-    console.log(status);
+    console.log();
     $.ajax({
         url: '../../backend/serviceHandler.php',
         method: 'GET',
         data: { method: 'queryAppointmentDetails', param: appointmentId },
         dataType: 'json',
         success: function (data) {
+            console.log(data);
             updateAppointmentDetails(appointmentId, data, status);
         },
         error: function (jqXHR, textStatus, errorThrown) {
@@ -83,10 +90,12 @@ function loadAppointmentDetails(appointmentId) {
         }
     });
 }
+//
 function updateSubmitButtonState() {
     var allFieldsFilled = checkFormNewAppointment();
     $("#new-appointment-btn").prop("disabled", !allFieldsFilled);
 }
+// Überprüfe ob alle Felder ausgefüllt sind
 function checkFormNewAppointment() {
     var title = $("#title").val();
     var location = $("#location").val();
@@ -97,14 +106,17 @@ function checkFormNewAppointment() {
     // Überprüfen Sie, ob alle Felder ausgefüllt sind, und geben Sie true oder false zurück
     return title && location && description && duration && selectable_dates && expiry_date;
 }
+// Anzeigen der Details eines Termins
 function updateAppointmentDetails(appointmentId, details, status) {
-    var output = '<div class="card"> <div class="card-body"> <h4 class="card-title">Voting</h4> <ul class="list-group"> ';
+    var output = '';
+    output += "<div class=\"card\"> <div class=\"card-body\">\n     <form class=\"description-form\">\n                <h4 class=\"card-title\">Beschreibung</h4>\n                    <ul class=\"list-group\">\n                        <li class=\"list-group-item\">       \n                            <span>".concat(details.description, "</span>\n                        </li>\n                    </ul>\n                </form>\n                \n        <form class=\"duration-form\">      \n            <h4 class=\"card-title mt-3\">Dauer</h4>       \n            <ul class=\"list-group\">\n            \n                <li class=\"list-group-item\">\n                    <span>").concat(details.duration, " Minuten</span>\n                </li>\n            </ul>\n        </form>");
+    output += '<h4 class="card-title mt-3">Voting</h4> <ul class="list-group"> ';
     for (var _i = 0, _a = details.selectable_dates; _i < _a.length; _i++) {
         var selectableDate = _a[_i];
         output += "\n        <li class=\"list-group-item\">\n            ".concat(selectableDate.date, "    \n            ").concat(selectableDate.time, "\n            <span class=\"badge bg-primary rounded-pill\">").concat(selectableDate.votes, " Stimmen</span>\n        </li>\n    ");
     }
     output += "</ul>";
-    output += "\n\n    <form class=\"appointment-form\" data-appointment-id=\"".concat(appointmentId, "\">\n        <h4 class=\"card-title mt-3\">Abstimmen</h4>\n        <div class=\"card\">\n            <div class=\"card-body\">\n        <div class=\"mb-3\">\n            <label for=\"username-").concat(appointmentId, "\" class=\"form-label\">Name</label>\n            <input type=\"text\" class=\"form-control\" id=\"username-").concat(appointmentId, "\" name=\"username\" required>\n        </div>\n   \n    <div class=\"mb-3\">\n        <label for=\"date-").concat(appointmentId, "\" class=\"form-label\">Terminoptionen</label>\n        <div id=\"date-").concat(appointmentId, "\">");
+    output += "<form class=\"appointment-form\" data-appointment-id=\"".concat(appointmentId, "\">\n                <h4 class=\"card-title mt-3\">Abstimmen</h4>\n                <div class=\"card\">\n                    <div class=\"card-body\">\n                <div class=\"mb-3\">\n                    <label for=\"username-").concat(appointmentId, "\" class=\"form-label\">Name</label>\n                    <input type=\"text\" class=\"form-control\" id=\"username-").concat(appointmentId, "\" name=\"username\" required>\n                </div>\n   \n    <div class=\"mb-3\">\n        <label for=\"date-").concat(appointmentId, "\" class=\"form-label\">Terminoptionen</label>\n        <div id=\"date-").concat(appointmentId, "\">");
     for (var _b = 0, _c = details.selectable_dates; _b < _c.length; _b++) {
         var selectableDate = _c[_b];
         output += "\n            <div class=\"form-check\">\n                <input class=\"form-check-input date-checkbox-".concat(appointmentId, "\" type=\"checkbox\" value=\"").concat(selectableDate.date, " ").concat(selectableDate.time, "\" id=\"selectableDate-").concat(appointmentId, "-").concat(selectableDate.date, "-").concat(selectableDate.time, "\" name=\"date\" data-date=\"").concat(selectableDate.date, "\" data-time=\"").concat(selectableDate.time, "\">\n                <label class=\"form-check-label\" for=\"selectableDate-").concat(appointmentId, "-").concat(selectableDate.date, "-").concat(selectableDate.time, "\">\n                    ").concat(selectableDate.date, ", ").concat(selectableDate.time, " Uhr\n                </label>\n            </div>");
@@ -131,7 +143,7 @@ function updateAppointmentDetails(appointmentId, details, status) {
         }
     }
     output += "</ul>";
-    console.log(appointmentId);
+    // Anzeigen der Details
     $(".details-row[data-appointment-id=\"".concat(appointmentId, "\"] .appointment-details")).html(output);
     // Event Listener zum Aktivieren/Deaktivieren des Abstimm-Buttons basierend auf dem Benutzernamen und ausgewählten Checkboxen
     function checkVoteButtonStatus() {
@@ -164,6 +176,7 @@ function updateAppointmentDetails(appointmentId, details, status) {
     });
 }
 function submitVote(appointmentId, username, comment, selectedDates, callback) {
+    console.log(appointmentId, username, comment, selectedDates);
     $.ajax({
         url: '../../backend/serviceHandler.php',
         type: 'GET',
