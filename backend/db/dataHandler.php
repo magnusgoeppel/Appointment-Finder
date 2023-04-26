@@ -1,6 +1,5 @@
 <?php
 include( __DIR__ . '/../models/appointment.php');
-//include(__DIR__ . '/../models/userVote.php');
 include(__DIR__ . '/db.php');
 
 class DataHandler
@@ -43,11 +42,12 @@ class DataHandler
         $appointments = [];
 
 
-        foreach ($result as $row) {
+        foreach ($result as $row)
+        {
             $expiryDate = new DateTime($row['expiry_date']);
             $formattedExpiryDate = $expiryDate->format('d.m.Y');
 
-            $appointment = new Appointment($row['id'], $row['title'], $row['location'], $formattedExpiryDate);
+            $appointment = new Appointment($row['id'], $row['title'], $row['location'], $formattedExpiryDate, $row['description'], $row['duration']);
             $appointments[] = $appointment;
         }
         $db->close();
@@ -58,7 +58,7 @@ class DataHandler
     {
         $selectable_dates = $this->getSelectableDates($appointment_id);
         $user_votes = $this->getUserVotes($appointment_id);
-        ;
+
         return ['selectable_dates' => $selectable_dates, 'user_votes' => $user_votes, 'appointment_id' => $appointment_id];
     }
 
@@ -76,7 +76,8 @@ class DataHandler
         {
             return false;
         }
-        foreach ($result as &$row) {
+        foreach ($result as &$row)
+        {
             $datetime = new DateTime($row['date'] . ' ' . $row['time']);
             $row['date'] = $datetime->format('d.m.Y');
             $row['time'] = $datetime->format('H:i');
@@ -148,7 +149,6 @@ class DataHandler
             }
         }
         $db->close();
-        return ['status' => 'success'];
     }
 
     private function getCreateNewAppointment($data)
@@ -195,7 +195,6 @@ class DataHandler
             $db->query($sql);
         }
         $db->close();
-        return ['status' => 'success'];
     }
 
     private function getDeleteAppointment($data)
@@ -216,6 +215,5 @@ class DataHandler
         $db->query($sql);
 
         $db->close();
-        return ['status' => 'success'];
     }
 }

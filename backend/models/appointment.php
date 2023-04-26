@@ -8,13 +8,13 @@ class Appointment
     public $duration;
     public $expiry_date;
 
-    function __construct($id, $title, $location, $expiry_date)
+    function __construct($id, $title, $location, $expiry_date, $description, $duration)
     {
         $this->id = $id;
         $this->title = $title;
         $this->location = $location;
-        //$this->description = $description;
-        //$this->duration = $duration;
+        $this->description = $description;
+        $this->duration = $duration;
         $this->expiry_date = $expiry_date;
     }
 }
