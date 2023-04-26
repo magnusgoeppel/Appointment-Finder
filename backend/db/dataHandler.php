@@ -10,6 +10,26 @@ class DataHandler
         return $this->getAppointmentData();
     }
 
+    public function queryAppointmentDetails($appointment_id)
+    {
+        return $this->getAppointmentDetails($appointment_id);
+    }
+
+    public function submitUserVote($param)
+    {
+        return $this->getSubmitUserVote($param);
+    }
+
+    public function createNewAppointment($data)
+    {
+        return $this->getCreateNewAppointment($data);
+    }
+
+    public function deleteAppointment($data)
+    {
+        return $this->getDeleteAppointment($data);
+    }
+
     private function getAppointmentData()
     {
         $db = new DB();
@@ -31,12 +51,7 @@ class DataHandler
         return $appointments;
     }
 
-    public function queryAppointmentDetails($appointment_id)
-    {
-        return $this->getAppointmentDetails($appointment_id);
-    }
-
-    public function getAppointmentDetails($appointment_id)
+    private function getAppointmentDetails($appointment_id)
     {
         $selectable_dates = $this->getSelectableDates($appointment_id);
         $user_votes = $this->getUserVotes($appointment_id);
@@ -54,7 +69,8 @@ class DataHandler
                                   WHERE selectable_dates.fk_appointment_id = '$appointment_id'
                                   GROUP BY selectable_dates.id, selectable_dates.date, selectable_dates.time");
 
-        if (!$result) {
+        if (!$result)
+        {
             return false;
         }
         foreach ($result as &$row) {
@@ -77,7 +93,8 @@ class DataHandler
                                   WHERE uv.fk_appointment_id = '$appointment_id'");
 
 
-        if (!$result) {
+        if (!$result)
+        {
             return false;
         }
         foreach ($result as &$row) {
@@ -88,12 +105,7 @@ class DataHandler
         return $result;
     }
 
-    public function submitUserVote($param)
-    {
-        return $this->getSubmitUserVote($param);
-    }
-
-    public function getSubmitUserVote($param)
+    private function getSubmitUserVote($param)
     {
         $appointment_id = $param['appointment_id'];
         $username = $param['username'];
@@ -133,12 +145,7 @@ class DataHandler
         return ['status' => 'success'];
     }
 
-    public function createNewAppointment($data)
-    {
-        return $this->getCreateNewAppointment($data);
-    }
-
-    public function getCreateNewAppointment($data)
+    private function getCreateNewAppointment($data)
     {
         $title = $data["title"];
         $location = $data["location"];
@@ -184,10 +191,9 @@ class DataHandler
         return ['status' => 'success'];
     }
 
-    function deleteAppointment($data)
+    private function getDeleteAppointment($data)
     {
         $appointment_id = $data["appointmentId"];
-        //echo 'appointment_id: ' . $appointment_id;
 
         $db = new DB();
 
