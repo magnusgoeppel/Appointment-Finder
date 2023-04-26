@@ -1,7 +1,10 @@
 $(document).ready(function () {
     loadAppointments();
-    //checkFormNewAppointment();
+    // Registrieren Sie die Event-Listener hier
+    $("#title, #location, #description, #duration, #selectable_dates, #expiry_date").on("input", updateSubmitButtonState);
     document.getElementById("new-appointment-btn").addEventListener("click", submitNewAppointment);
+    // Aktualisieren Sie den Zustand des Buttons beim Laden der Seite
+    updateSubmitButtonState();
 });
 function loadAppointments() {
     $.ajax({
@@ -80,6 +83,10 @@ function loadAppointmentDetails(appointmentId) {
         }
     });
 }
+function updateSubmitButtonState() {
+    var allFieldsFilled = checkFormNewAppointment();
+    $("#new-appointment-btn").prop("disabled", !allFieldsFilled);
+}
 function checkFormNewAppointment() {
     var title = $("#title").val();
     var location = $("#location").val();
@@ -87,14 +94,8 @@ function checkFormNewAppointment() {
     var duration = $("#duration").val();
     var selectable_dates = $("#selectable_dates").val();
     var expiry_date = $("#expiry_date").val();
-    if (title && location && description && duration && selectable_dates && expiry_date) {
-        $("#new-appointment-btn").prop("disabled", false);
-    }
-    else {
-        $("#new-appointment-btn").prop("disabled", true);
-    }
-    //$("#title, #location, #description, #duration, #selectable_dates, #expiry_date").on("input", checkFormNewAppointment);
-    document.getElementById("new-appointment-btn").addEventListener("click", submitNewAppointment);
+    // Überprüfen Sie, ob alle Felder ausgefüllt sind, und geben Sie true oder false zurück
+    return title && location && description && duration && selectable_dates && expiry_date;
 }
 function updateAppointmentDetails(appointmentId, details, status) {
     var isExpired = false;
@@ -110,7 +111,7 @@ function updateAppointmentDetails(appointmentId, details, status) {
         output += "\n            <div class=\"form-check\">\n                <input class=\"form-check-input date-checkbox-".concat(appointmentId, "\" type=\"checkbox\" value=\"").concat(selectableDate.date, " ").concat(selectableDate.time, "\" id=\"selectableDate-").concat(appointmentId, "-").concat(selectableDate.date, "-").concat(selectableDate.time, "\" name=\"date\" data-date=\"").concat(selectableDate.date, "\" data-time=\"").concat(selectableDate.time, "\" ").concat(isExpired ? 'disabled' : '', ">\n                <label class=\"form-check-label\" for=\"selectableDate-").concat(appointmentId, "-").concat(selectableDate.date, "-").concat(selectableDate.time, "\">\n                    ").concat(selectableDate.date, ", ").concat(selectableDate.time, " Uhr\n                </label>\n            </div>");
     }
     output += "</div>";
-    output += "\n        </select>\n        </div>\n        <div class=\"mb-3\">\n            <label for=\"comment-".concat(appointmentId, "\" class=\"form-label\">Kommentare</label>\n            <textarea class=\"form-control\" id=\"comment-").concat(appointmentId, "\" name=\"comment\" rows=\"3\" placeholder=\"optional\" ").concat(isExpired ? 'disabled' : '', "></textarea>\n        </div>");
+    output += "\n        </select>\n        </div>\n        <div class=\"mb-3\">\n            <label for=\"comment-".concat(appointmentId, "\" class=\"form-label\">Kommentare</label>\n            <textarea class=\"form-control\" id=\"comment-").concat(appointmentId, "\" name=\"comment\" rows=\"3\" placeholder=\"optional\"></textarea>\n        </div>");
     output += "</form>";
     if (status === "Abgelaufen") {
         output += "<div class=\"alert alert-warning\" role=\"alert\">Dieser Termin ist abgelaufen. Abstimmung nicht mehr m\u00F6glich.</div>";
@@ -145,15 +146,21 @@ function updateAppointmentDetails(appointmentId, details, status) {
             loadAppointmentDetails(appointmentId);
         });
     });
-    // Event Listener zum Aktivieren/Deaktivieren des Abstimm-Buttons hinzufügen
-    $("#username-".concat(appointmentId)).on('input', function () {
-        if ($(this).val() && !isExpired) {
+    $(".details-row[data-appointment-id=\"".concat(appointmentId, "\"] .appointment-details")).html(output);
+    // Event Listener zum Aktivieren/Deaktivieren des Abstimm-Buttons basierend auf dem Benutzernamen und ausgewählten Checkboxen
+    function checkVoteButtonStatus() {
+        var anyCheckboxChecked = $(".date-checkbox-".concat(appointmentId, ":checked")).length > 0;
+        var usernameNotEmpty = $("#username-".concat(appointmentId)).val() !== '';
+        if (usernameNotEmpty && anyCheckboxChecked && !isExpired) {
             $("#submit-vote-".concat(appointmentId)).prop('disabled', false);
         }
         else {
             $("#submit-vote-".concat(appointmentId)).prop('disabled', true);
         }
-    });
+    }
+    $("#username-".concat(appointmentId)).on('input', checkVoteButtonStatus);
+    // Event Listener zum Aktivieren/Deaktivieren des Abstimm-Buttons basierend auf ausgewählten Checkboxen
+    $(".date-checkbox-".concat(appointmentId)).on('change', checkVoteButtonStatus);
 }
 function submitVote(appointmentId, username, comment, selectedDates, callback) {
     $.ajax({
@@ -218,6 +225,7 @@ function submitNewAppointment(event) {
         success: function (result) {
             console.log(result);
             alert("Neues Appointment erfolgreich erstellt!");
+            window.location.reload();
         },
         error: function (xhr, status, error) {
             console.error("Error:", error, "Status:", status, "xhr:", xhr);
@@ -247,6 +255,7 @@ function deleteAppointment(appointmentId) {
         dataType: 'json',
         success: function () {
             alert('Termin erfolgreich gelöscht.');
+            location.reload();
         },
         error: function (jqXHR, textStatus, errorThrown) {
             console.error('Error: ' + jqXHR, textStatus, errorThrown);
