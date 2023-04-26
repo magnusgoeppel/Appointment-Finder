@@ -3,7 +3,8 @@ include("db/db.php");
 
 $db = new DB();
 
-if ($db->checkDBConnection()) {
+if ($db->checkDBConnection())
+{
     echo "Datenbankverbindung: Erfolgreich";
 }
 else

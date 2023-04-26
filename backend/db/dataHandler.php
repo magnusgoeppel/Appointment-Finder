@@ -35,7 +35,9 @@ class DataHandler
         $db = new DB();
         $result = $db->query("SELECT * FROM appointments");
 
-        if (!$result) {
+        if (!$result)
+        {
+            $db->close();
             return false;
         }
         $appointments = [];
@@ -48,6 +50,7 @@ class DataHandler
             $appointment = new Appointment($row['id'], $row['title'], $row['location'], $formattedExpiryDate);
             $appointments[] = $appointment;
         }
+        $db->close();
         return $appointments;
     }
 
@@ -55,7 +58,7 @@ class DataHandler
     {
         $selectable_dates = $this->getSelectableDates($appointment_id);
         $user_votes = $this->getUserVotes($appointment_id);
-
+        ;
         return ['selectable_dates' => $selectable_dates, 'user_votes' => $user_votes, 'appointment_id' => $appointment_id];
     }
 
@@ -78,7 +81,7 @@ class DataHandler
             $row['date'] = $datetime->format('d.m.Y');
             $row['time'] = $datetime->format('H:i');
         }
-
+        $db->close();
         return $result;
     }
 
@@ -95,13 +98,16 @@ class DataHandler
 
         if (!$result)
         {
+            $db->close();
             return false;
         }
-        foreach ($result as &$row) {
+        foreach ($result as &$row)
+        {
             $datetime = new DateTime($row['selected_date'] . ' ' . $row['selected_time']);
             $row['selected_date'] = $datetime->format('d.m.Y');
             $row['selected_time'] = $datetime->format('H:i');
         }
+        $db->close();
         return $result;
     }
 
@@ -141,7 +147,7 @@ class DataHandler
                 $db->query($sql);
             }
         }
-
+        $db->close();
         return ['status' => 'success'];
     }
 
@@ -188,6 +194,7 @@ class DataHandler
             $sql = "INSERT INTO selectable_dates (fk_appointment_id, date, time) VALUES ('$appointment_id', '$date', '$time')";
             $db->query($sql);
         }
+        $db->close();
         return ['status' => 'success'];
     }
 
@@ -208,6 +215,7 @@ class DataHandler
         $sql = "DELETE FROM user_votes WHERE fk_appointment_id = '$appointment_id'";
         $db->query($sql);
 
+        $db->close();
         return ['status' => 'success'];
     }
 }
