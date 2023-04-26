@@ -4,6 +4,8 @@ include(__DIR__ . '/db.php');
 
 class DataHandler
 {
+
+    // Hilfsfunktionen für die Datenbankabfragen
     public function queryAppointments()
     {
         return $this->getAppointmentData();
@@ -29,6 +31,7 @@ class DataHandler
         return $this->getDeleteAppointment($data);
     }
 
+    // Gibt alle Appointments zurück
     private function getAppointmentData()
     {
         $db = new DB();
@@ -54,6 +57,7 @@ class DataHandler
         return $appointments;
     }
 
+    // Gibt alle Details zu einem Appointment zurück
     private function getAppointmentDetails($appointment_id)
     {
         $selectable_dates = $this->getSelectableDates($appointment_id);
@@ -64,6 +68,7 @@ class DataHandler
         return ['selectable_dates' => $selectable_dates, 'user_votes' => $user_votes, 'appointment_id' => $appointment_id, 'description' => $description, 'duration' => $duration];
     }
 
+    // Gibt die Terminoptionen zurück
     private function getSelectableDates($appointment_id)
     {
         $db = new DB();
@@ -88,6 +93,7 @@ class DataHandler
         return $result;
     }
 
+    // Gibt die User Votes zurück
     private function getUserVotes($appointment_id)
     {
         $db = new DB();
@@ -114,6 +120,7 @@ class DataHandler
         return $result;
     }
 
+    // Gibt die Beschreibung zurück
     private function getDescription($appointment_id)
     {
 
@@ -130,6 +137,7 @@ class DataHandler
         return $result[0]['description'];
     }
 
+    // Gibt die Dauer zurück
     private function getDuration($appointment_id)
     {
         $db = new DB();
@@ -145,6 +153,7 @@ class DataHandler
         return $result[0]['duration'];
     }
 
+    // Speichert ein neues Appointment in der Datenbank
     private function getSubmitUserVote($param)
     {
         $appointment_id = $param['appointment_id'];
@@ -154,29 +163,30 @@ class DataHandler
 
         $db = new DB();
 
-        // Insert user vote into user_votes table
+
         $appointment_id = $db->escape($appointment_id);
         $username = $db->escape($username);
         $comment = $db->escape($comment);
         $sql = "INSERT INTO user_votes (fk_appointment_id, username, comment) VALUES ('$appointment_id', '$username', '$comment')";
         $db->query($sql);
 
-        // Get the last inserted user_vote id
+
         $user_vote_id = $db->getLastInsertedId();
 
-        // Insert selected_dates into user_selected_dates table
-        foreach ($selected_dates as $selected_date) {
+        // Für jede ausgewählte Option wird ein Eintrag in der Tabelle user_selected_dates erstellt
+        foreach ($selected_dates as $selected_date)
+        {
             $date = $selected_date['date'];
             $time = $selected_date['time'];
 
-            // Find the selectable_dates id for the given date and time
+
             $sql = "SELECT id FROM selectable_dates WHERE fk_appointment_id = '$appointment_id' AND date = '$date' AND time = '$time'";
             $result = $db->query($sql);
 
-            if ($result) {
+            // Erstelle einen Eintrag in der Tabelle user_selected_dates
+            if ($result)
+            {
                 $selectable_dates_id = $result[0]['id'];
-
-                // Insert the record into user_selected_dates table
                 $sql = "INSERT INTO user_selected_dates (fk_user_vote_id, fk_selectable_dates_id) VALUES ('$user_vote_id', '$selectable_dates_id')";
                 $db->query($sql);
             }
@@ -185,6 +195,7 @@ class DataHandler
         return ['success' => true];
     }
 
+    // Speichert ein neues Appointment in der Datenbank
     private function getCreateNewAppointment($data)
     {
         $title = $data["title"];
@@ -232,6 +243,7 @@ class DataHandler
         return ['success' => true];
     }
 
+    // Löscht ein Appointment aus der Datenbank
     private function getDeleteAppointment($data)
     {
         $appointment_id = $data["appointmentId"];

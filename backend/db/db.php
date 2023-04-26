@@ -12,12 +12,7 @@ class DB
         $this->connect();
     }
 
-    public function checkDBConnection()
-    {
-        return $this->connection->ping();
-    }
-
-
+    // Connection zur Datenbank aufbauen
     private function connect()
     {
         $this->connection = new mysqli($this->host, $this->user, $this->password, $this->database);
@@ -29,6 +24,7 @@ class DB
         }
     }
 
+    // Funktion zum Ausführen von SQL-Statements
     public function query($sql)
     {
         $result = $this->connection->query($sql);
@@ -36,7 +32,8 @@ class DB
         if ($result === TRUE)
         {
             return $this->connection->insert_id;
-        } else if ($result === FALSE)
+        }
+        else if ($result === FALSE)
         {
             return FALSE;
         }
@@ -52,17 +49,19 @@ class DB
         }
     }
 
+    // Funktion gegen SQL-Injection
     public function escape($value)
     {
-        //$value = strip_tags($value);
         return $this->connection->real_escape_string($value);
     }
 
+    // Connection zur Datenbank schließen
     public function close()
     {
         $this->connection->close();
     }
 
+    // Die ID des zuletzt eingefügten Datensatzes zurückgeben
     public function getLastInsertedId()
     {
         return $this->connection-> insert_id;

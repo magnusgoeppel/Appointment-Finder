@@ -10,6 +10,7 @@ class SimpleLogic
         $this->dh = new DataHandler();
     }
 
+    // Verarbeitet die Anfrage und ruft die entsprechende Methode in dataHandler.php auf
     function handleRequest($method, $param = null)
     {
         switch ($method)

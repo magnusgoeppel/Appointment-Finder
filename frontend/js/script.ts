@@ -142,14 +142,14 @@ function loadAppointmentDetails(appointmentId)
     });
 }
 
-//
+// Aktualisiert den "Submit" Button-Zustand basierend auf der Vollständigkeit des Formulars
 function updateSubmitButtonState()
 {
     const allFieldsFilled = checkFormNewAppointment();
     $("#new-appointment-btn").prop("disabled", !allFieldsFilled);
 }
 
-// Überprüfe ob alle Felder ausgefüllt sind
+// Überprüfe, ob alle Felder ausgefüllt sind
 function checkFormNewAppointment()
 {
     const title = $("#title").val();
@@ -168,6 +168,7 @@ function updateAppointmentDetails(appointmentId, details, status)
 {
     let output = '';
 
+    // Beschreibung
     output += `<div class="card"> <div class="card-body">
      <form class="description-form">
                 <h4 class="card-title">Beschreibung</h4>
@@ -177,7 +178,8 @@ function updateAppointmentDetails(appointmentId, details, status)
                         </li>
                     </ul>
                 </form>
-                
+               
+       // Dauer 
         <form class="duration-form">      
             <h4 class="card-title mt-3">Dauer</h4>       
             <ul class="list-group">\n            
@@ -186,6 +188,7 @@ function updateAppointmentDetails(appointmentId, details, status)
                 </li>
             </ul>
         </form>`;
+    // Voting
     output += '<h4 class="card-title mt-3">Voting</h4> <ul class="list-group"> ';
 
     for (const selectableDate of details.selectable_dates)
@@ -200,6 +203,7 @@ function updateAppointmentDetails(appointmentId, details, status)
     }
     output += `</ul>`;
 
+    // Abstimmung
     output += `<form class="appointment-form" data-appointment-id="${appointmentId}">
                 <h4 class="card-title mt-3">Abstimmen</h4>
                 <div class="card">
@@ -236,7 +240,7 @@ function updateAppointmentDetails(appointmentId, details, status)
 
     output += `</form>`;
 
-
+    // Wenn der Termin noch nicht abgelaufen ist, kann abgestimmt werden
     if (status === "Abgelaufen")
     {
         output += `<div class="alert alert-warning" role="alert">Dieser Termin ist abgelaufen. Abstimmung nicht mehr möglich.</div>`;
@@ -252,15 +256,17 @@ function updateAppointmentDetails(appointmentId, details, status)
 
     output += `
             <h4 class"card-title">Kommentare</h4>
-<ul class="list-group">
-`;
+            <ul class="list-group">`;
 
     const uniqueUsernames = {};
 
-    for (const userVote of details.user_votes) {
+    // Generieren der Liste der Kommentare
+    for (const userVote of details.user_votes)
+    {
         const hasComment = userVote.comment.trim() !== '';
 
-        if (hasComment && !uniqueUsernames[userVote.username]) {
+        if (hasComment && !uniqueUsernames[userVote.username])
+        {
             uniqueUsernames[userVote.username] = true;
             output += `
         <li class="list-group-item">
@@ -276,7 +282,7 @@ function updateAppointmentDetails(appointmentId, details, status)
     // Anzeigen der Details
     $(`.details-row[data-appointment-id="${appointmentId}"] .appointment-details`).html(output);
 
-    // Event Listener zum Aktivieren/Deaktivieren des Abstimm-Buttons basierend auf dem Benutzernamen und ausgewählten Checkboxen
+    // Die Funktion checkVoteButtonStatus wird aufgerufen, um den Abstimm-Button zu aktivieren/deaktivieren
     function checkVoteButtonStatus()
     {
         const anyCheckboxChecked = $(`.date-checkbox-${appointmentId}:checked`).length > 0;
@@ -292,9 +298,10 @@ function updateAppointmentDetails(appointmentId, details, status)
 
     $(`#username-${appointmentId}`).on('input', checkVoteButtonStatus);
 
-    // Event Listener zum Aktivieren/Deaktivieren des Abstimm-Buttons basierend auf ausgewählten Checkboxen
+    // Event Listener zum Aktivieren/Deaktivieren des Abstimm-Buttons
     $(`.date-checkbox-${appointmentId}`).on('change', checkVoteButtonStatus);
 
+    // Event Listener zum Absenden des Abstimm-Formulars
     $(`#submit-vote-${appointmentId}`).on('click', function ()
     {
         console.log("submit vote");
@@ -318,6 +325,8 @@ function updateAppointmentDetails(appointmentId, details, status)
     });
 
 }
+
+// Funktion zum Speichern der Abstimmung
 function submitVote(appointmentId, username, comment, selectedDates, callback)
 {
     console.log(appointmentId, username, comment, selectedDates);
@@ -352,10 +361,12 @@ function submitVote(appointmentId, username, comment, selectedDates, callback)
     });
 }
 
+// Funktion zum Speichern eines neuen Termins
 function submitNewAppointment(event)
 {
     event.preventDefault();
 
+    // Funktion zum Konvertieren des Datums in das richtige Format
     function convertDateTimeFormat(dateTimeString)
     {
         const [datePart, timePart] = dateTimeString.split(', ');
@@ -410,20 +421,21 @@ function submitNewAppointment(event)
     });
 }
 
-
+// Funktion zum Formatieren des Datums
 function parseGermanDate(dateString)
 {
     const [day, month, year] = dateString.split('.');
     return new Date(year, month - 1, day);
 }
 
-
+// Funktion zum Formatieren des Datums
 function parseDate(dateString)
 {
     const [day, month, year] = dateString.split('.');
     return `${year}-${month}-${day}`;
 }
 
+// Funktion zum Löschen eines Termins
 function deleteAppointment(appointmentId)
 {
     const data=

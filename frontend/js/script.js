@@ -90,12 +90,12 @@ function loadAppointmentDetails(appointmentId) {
         }
     });
 }
-//
+// Aktualisiert den "Submit" Button-Zustand basierend auf der Vollständigkeit des Formulars
 function updateSubmitButtonState() {
     var allFieldsFilled = checkFormNewAppointment();
     $("#new-appointment-btn").prop("disabled", !allFieldsFilled);
 }
-// Überprüfe ob alle Felder ausgefüllt sind
+// Überprüfe, ob alle Felder ausgefüllt sind
 function checkFormNewAppointment() {
     var title = $("#title").val();
     var location = $("#location").val();
@@ -109,13 +109,16 @@ function checkFormNewAppointment() {
 // Anzeigen der Details eines Termins
 function updateAppointmentDetails(appointmentId, details, status) {
     var output = '';
-    output += "<div class=\"card\"> <div class=\"card-body\">\n     <form class=\"description-form\">\n                <h4 class=\"card-title\">Beschreibung</h4>\n                    <ul class=\"list-group\">\n                        <li class=\"list-group-item\">       \n                            <span>".concat(details.description, "</span>\n                        </li>\n                    </ul>\n                </form>\n                \n        <form class=\"duration-form\">      \n            <h4 class=\"card-title mt-3\">Dauer</h4>       \n            <ul class=\"list-group\">\n            \n                <li class=\"list-group-item\">\n                    <span>").concat(details.duration, " Minuten</span>\n                </li>\n            </ul>\n        </form>");
+    // Beschreibung
+    output += "<div class=\"card\"> <div class=\"card-body\">\n     <form class=\"description-form\">\n                <h4 class=\"card-title\">Beschreibung</h4>\n                    <ul class=\"list-group\">\n                        <li class=\"list-group-item\">       \n                            <span>".concat(details.description, "</span>\n                        </li>\n                    </ul>\n                </form>\n               \n       // Dauer \n        <form class=\"duration-form\">      \n            <h4 class=\"card-title mt-3\">Dauer</h4>       \n            <ul class=\"list-group\">\n            \n                <li class=\"list-group-item\">\n                    <span>").concat(details.duration, " Minuten</span>\n                </li>\n            </ul>\n        </form>");
+    // Voting
     output += '<h4 class="card-title mt-3">Voting</h4> <ul class="list-group"> ';
     for (var _i = 0, _a = details.selectable_dates; _i < _a.length; _i++) {
         var selectableDate = _a[_i];
         output += "\n        <li class=\"list-group-item\">\n            ".concat(selectableDate.date, "    \n            ").concat(selectableDate.time, "\n            <span class=\"badge bg-primary rounded-pill\">").concat(selectableDate.votes, " Stimmen</span>\n        </li>\n    ");
     }
     output += "</ul>";
+    // Abstimmung
     output += "<form class=\"appointment-form\" data-appointment-id=\"".concat(appointmentId, "\">\n                <h4 class=\"card-title mt-3\">Abstimmen</h4>\n                <div class=\"card\">\n                    <div class=\"card-body\">\n                <div class=\"mb-3\">\n                    <label for=\"username-").concat(appointmentId, "\" class=\"form-label\">Name</label>\n                    <input type=\"text\" class=\"form-control\" id=\"username-").concat(appointmentId, "\" name=\"username\" required>\n                </div>\n   \n    <div class=\"mb-3\">\n        <label for=\"date-").concat(appointmentId, "\" class=\"form-label\">Terminoptionen</label>\n        <div id=\"date-").concat(appointmentId, "\">");
     for (var _b = 0, _c = details.selectable_dates; _b < _c.length; _b++) {
         var selectableDate = _c[_b];
@@ -124,6 +127,7 @@ function updateAppointmentDetails(appointmentId, details, status) {
     output += "</div>";
     output += "\n        </select>\n        </div>\n        <div class=\"mb-3\">\n            <label for=\"comment-".concat(appointmentId, "\" class=\"form-label\">Kommentare</label>\n            <textarea class=\"form-control\" id=\"comment-").concat(appointmentId, "\" name=\"comment\" rows=\"3\" placeholder=\"optional\"></textarea>\n        </div>");
     output += "</form>";
+    // Wenn der Termin noch nicht abgelaufen ist, kann abgestimmt werden
     if (status === "Abgelaufen") {
         output += "<div class=\"alert alert-warning\" role=\"alert\">Dieser Termin ist abgelaufen. Abstimmung nicht mehr m\u00F6glich.</div>";
     }
@@ -132,8 +136,9 @@ function updateAppointmentDetails(appointmentId, details, status) {
     }
     output += "     </div></div><div>\n    </div></form>";
     output += '</ul><br/>';
-    output += "\n            <h4 class\"card-title\">Kommentare</h4>\n<ul class=\"list-group\">\n";
+    output += "\n            <h4 class\"card-title\">Kommentare</h4>\n            <ul class=\"list-group\">";
     var uniqueUsernames = {};
+    // Generieren der Liste der Kommentare
     for (var _d = 0, _e = details.user_votes; _d < _e.length; _d++) {
         var userVote = _e[_d];
         var hasComment = userVote.comment.trim() !== '';
@@ -145,7 +150,7 @@ function updateAppointmentDetails(appointmentId, details, status) {
     output += "</ul>";
     // Anzeigen der Details
     $(".details-row[data-appointment-id=\"".concat(appointmentId, "\"] .appointment-details")).html(output);
-    // Event Listener zum Aktivieren/Deaktivieren des Abstimm-Buttons basierend auf dem Benutzernamen und ausgewählten Checkboxen
+    // Die Funktion checkVoteButtonStatus wird aufgerufen, um den Abstimm-Button zu aktivieren/deaktivieren
     function checkVoteButtonStatus() {
         var anyCheckboxChecked = $(".date-checkbox-".concat(appointmentId, ":checked")).length > 0;
         var usernameNotEmpty = $("#username-".concat(appointmentId)).val() !== '';
@@ -157,8 +162,9 @@ function updateAppointmentDetails(appointmentId, details, status) {
         }
     }
     $("#username-".concat(appointmentId)).on('input', checkVoteButtonStatus);
-    // Event Listener zum Aktivieren/Deaktivieren des Abstimm-Buttons basierend auf ausgewählten Checkboxen
+    // Event Listener zum Aktivieren/Deaktivieren des Abstimm-Buttons
     $(".date-checkbox-".concat(appointmentId)).on('change', checkVoteButtonStatus);
+    // Event Listener zum Absenden des Abstimm-Formulars
     $("#submit-vote-".concat(appointmentId)).on('click', function () {
         console.log("submit vote");
         var username = $("#username-".concat(appointmentId)).val();
@@ -175,6 +181,7 @@ function updateAppointmentDetails(appointmentId, details, status) {
         });
     });
 }
+// Funktion zum Speichern der Abstimmung
 function submitVote(appointmentId, username, comment, selectedDates, callback) {
     console.log(appointmentId, username, comment, selectedDates);
     $.ajax({
@@ -204,8 +211,10 @@ function submitVote(appointmentId, username, comment, selectedDates, callback) {
         }
     });
 }
+// Funktion zum Speichern eines neuen Termins
 function submitNewAppointment(event) {
     event.preventDefault();
+    // Funktion zum Konvertieren des Datums in das richtige Format
     function convertDateTimeFormat(dateTimeString) {
         var _a = dateTimeString.split(', '), datePart = _a[0], timePart = _a[1];
         var _b = datePart.split('.'), day = _b[0], month = _b[1], year = _b[2];
@@ -248,14 +257,17 @@ function submitNewAppointment(event) {
         },
     });
 }
+// Funktion zum Formatieren des Datums
 function parseGermanDate(dateString) {
     var _a = dateString.split('.'), day = _a[0], month = _a[1], year = _a[2];
     return new Date(year, month - 1, day);
 }
+// Funktion zum Formatieren des Datums
 function parseDate(dateString) {
     var _a = dateString.split('.'), day = _a[0], month = _a[1], year = _a[2];
     return "".concat(year, "-").concat(month, "-").concat(day);
 }
+// Funktion zum Löschen eines Termins
 function deleteAppointment(appointmentId) {
     var data = {
         method: 'deleteAppointment',
