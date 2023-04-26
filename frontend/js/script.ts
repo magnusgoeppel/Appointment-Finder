@@ -6,7 +6,7 @@ $(document).ready(function ()
     document.getElementById("new-appointment-btn").addEventListener("click", submitNewAppointment);
 
     // Aktualisieren Sie den Zustand des Buttons beim Laden der Seite
-    updateSubmitButtonState();
+    //updateSubmitButtonState();
 });
 
 function loadAppointments()
@@ -21,7 +21,7 @@ function loadAppointments()
             displayAppointments(data);
         },
         error: function (jqXHR, textStatus, errorThrown) {
-            console.error('Error: ' + jqXHR, textStatus, errorThrown);
+            //console.error('Error: ' + jqXHR, textStatus, errorThrown);
             let html = '<div class="alert alert-danger" role="alert">';
             html += 'Fehler beim Laden der Termine. Bitte versuchen Sie es später erneut.';
             html += '</div>';
@@ -36,6 +36,7 @@ function displayAppointments(appointments)
             <thead>
                 <tr>
                     <th>Details</th>
+                    <th>ID</th>
                     <th>Titel</th>
                     <th>Ort</th>
                     <th class="shift-left">Ablaufdatum des Votings</th>
@@ -48,7 +49,6 @@ function displayAppointments(appointments)
     for (const appointment of appointments)
     {
         let status = "Offen";
-        let statusBool = false;
         const currentDate = new Date();
         const expiryDate = parseGermanDate(appointment.expiry_date);
         console.log(currentDate);
@@ -62,6 +62,7 @@ function displayAppointments(appointments)
         output += `
             <tr class="appointment-row" data-appointment-id="${appointment.id}">
                 <td><img class="toggle-details" data-appointment-id="${appointment.id}" src="img/expand.png" alt="Toggle details"></td>
+                <td>${appointment.id}</td>
                 <td>${appointment.title}</td>
                 <td>${appointment.location}</td>
                 <td>${appointment.expiry_date}</td>
@@ -111,6 +112,7 @@ function loadAppointmentDetails(appointmentId)
 {
     const detailsRow = $(`.details-row[data-appointment-id="${appointmentId}"]`);
     const status = detailsRow.prev('.appointment-row').find('td:nth-last-child(2)').text();
+    let isExpired = status === "Abgelaufen";
 
     console.log(status);
 
@@ -156,7 +158,6 @@ function checkFormNewAppointment()
 
 function updateAppointmentDetails(appointmentId, details, status)
 {
-    let isExpired = false;
     let output = '<div class="card"> <div class="card-body"> <h4 class="card-title">Voting</h4> <ul class="list-group"> ';
 
     for (const selectableDate of details.selectable_dates)
@@ -179,7 +180,7 @@ function updateAppointmentDetails(appointmentId, details, status)
             <div class="card-body">
         <div class="mb-3">
             <label for="username-${appointmentId}" class="form-label">Name</label>
-            <input type="text" class="form-control" id="username-${appointmentId}" name="username" required ${isExpired ? 'disabled' : ''}>
+            <input type="text" class="form-control" id="username-${appointmentId}" name="username" required>
         </div>
    
     <div class="mb-3">
@@ -189,7 +190,7 @@ function updateAppointmentDetails(appointmentId, details, status)
     {
         output += `
             <div class="form-check">
-                <input class="form-check-input date-checkbox-${appointmentId}" type="checkbox" value="${selectableDate.date} ${selectableDate.time}" id="selectableDate-${appointmentId}-${selectableDate.date}-${selectableDate.time}" name="date" data-date="${selectableDate.date}" data-time="${selectableDate.time}" ${isExpired ? 'disabled' : ''}>
+                <input class="form-check-input date-checkbox-${appointmentId}" type="checkbox" value="${selectableDate.date} ${selectableDate.time}" id="selectableDate-${appointmentId}-${selectableDate.date}-${selectableDate.time}" name="date" data-date="${selectableDate.date}" data-time="${selectableDate.time}">
                 <label class="form-check-label" for="selectableDate-${appointmentId}-${selectableDate.date}-${selectableDate.time}">
                     ${selectableDate.date}, ${selectableDate.time} Uhr
                 </label>
@@ -212,7 +213,8 @@ function updateAppointmentDetails(appointmentId, details, status)
     if (status === "Abgelaufen")
     {
         output += `<div class="alert alert-warning" role="alert">Dieser Termin ist abgelaufen. Abstimmung nicht mehr möglich.</div>`;
-    } else {
+    } else
+    {
         output += `<button type="button" id="submit-vote-${appointmentId}" class="btn btn-primary" disabled>Abstimmen</button>`;
     }
 
@@ -242,14 +244,34 @@ function updateAppointmentDetails(appointmentId, details, status)
         `;
         }
     }
+    output += `</ul>`;
 
-
+    console.log(appointmentId);
 
     $(`.details-row[data-appointment-id="${appointmentId}"] .appointment-details`).html(output);
 
+    // Event Listener zum Aktivieren/Deaktivieren des Abstimm-Buttons basierend auf dem Benutzernamen und ausgewählten Checkboxen
+    function checkVoteButtonStatus()
+    {
+        const anyCheckboxChecked = $(`.date-checkbox-${appointmentId}:checked`).length > 0;
+        const usernameNotEmpty = $(`#username-${appointmentId}`).val() !== '';
+
+        if (usernameNotEmpty && anyCheckboxChecked)
+        {
+            $(`#submit-vote-${appointmentId}`).prop('disabled', false);
+        } else {
+            $(`#submit-vote-${appointmentId}`).prop('disabled', true);
+        }
+    }
+
+    $(`#username-${appointmentId}`).on('input', checkVoteButtonStatus);
+
+    // Event Listener zum Aktivieren/Deaktivieren des Abstimm-Buttons basierend auf ausgewählten Checkboxen
+    $(`.date-checkbox-${appointmentId}`).on('change', checkVoteButtonStatus);
+
     $(`#submit-vote-${appointmentId}`).on('click', function ()
     {
-
+        console.log("submit vote");
         let username = $(`#username-${appointmentId}`).val();
         let comment = $(`#comment-${appointmentId}`).val();
         let selectedDates = [];
@@ -269,30 +291,8 @@ function updateAppointmentDetails(appointmentId, details, status)
         });
     });
 
-    $(`.details-row[data-appointment-id="${appointmentId}"] .appointment-details`).html(output);
-
-    // Event Listener zum Aktivieren/Deaktivieren des Abstimm-Buttons basierend auf dem Benutzernamen und ausgewählten Checkboxen
-    function checkVoteButtonStatus()
-    {
-        const anyCheckboxChecked = $(`.date-checkbox-${appointmentId}:checked`).length > 0;
-        const usernameNotEmpty = $(`#username-${appointmentId}`).val() !== '';
-
-        if (usernameNotEmpty && anyCheckboxChecked && !isExpired) {
-            $(`#submit-vote-${appointmentId}`).prop('disabled', false);
-        } else {
-            $(`#submit-vote-${appointmentId}`).prop('disabled', true);
-        }
-    }
-
-    $(`#username-${appointmentId}`).on('input', checkVoteButtonStatus);
-
-    // Event Listener zum Aktivieren/Deaktivieren des Abstimm-Buttons basierend auf ausgewählten Checkboxen
-    $(`.date-checkbox-${appointmentId}`).on('change', checkVoteButtonStatus);
 }
-
-
-
-    function submitVote(appointmentId, username, comment, selectedDates, callback)
+function submitVote(appointmentId, username, comment, selectedDates, callback)
 {
     $.ajax({
         url: '../../backend/serviceHandler.php',
