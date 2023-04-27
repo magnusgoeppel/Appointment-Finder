@@ -179,7 +179,7 @@ function updateAppointmentDetails(appointmentId, details, status)
                     </ul>
                 </form>
                
-       // Dauer 
+       <!-- Dauer -->
         <form class="duration-form">      
             <h4 class="card-title mt-3">Dauer</h4>       
             <ul class="list-group">\n            
