@@ -1,41 +1,63 @@
 # Appointment Finder
-Diese Webanwendung bietet eine umfassende Lösung zur Verwaltung von Terminen. Benutzer können Termine erstellen, ansehen, darüber abstimmen und sie löschen. Die Anwendung nutzt eine Kombination aus Frontend-Technologien (HTML, CSS, Bootstrap, JavaScript, jQuery) und einem PHP-basierten Backend, um eine dynamische Benutzererfahrung zu ermöglichen.
 
-## Funktionen
-- Terminerstellung: Benutzer können neue Termine mit Details wie Titel, Ort, Beschreibung, Dauer und abstimmungsfähigen Daten erstellen.
-- Terminanzeige: Termine werden in einer Liste angezeigt, wobei Optionen zur Anzeige weiterer Details, zur Abstimmung und zum Löschen bereitstehen.
-- Abstimmung über Termine: Benutzer können ihre Präferenzen für Terminoptionen abgeben, indem sie über verschiedene vorgeschlagene Zeiten abstimmen.
-- Detailansicht: Jeder Termin kann erweitert werden, um zusätzliche Informationen und Abstimmungsoptionen anzuzeigen.
-- Löschfunktion: Termine können aus der Liste entfernt werden.
+This web application provides a comprehensive solution for managing appointments. Users can create, view, vote on, and delete appointments. The application uses a combination of frontend technologies (HTML, CSS, Bootstrap, JavaScript, jQuery) and a PHP-based backend to offer a dynamic user experience.
 
+## Features
 
-## Voraussetzungen
-- PHP-Server (z.B. XAMPP, WAMP, LAMP)
-- MySQL-Datenbankserver
-- Webbrowser (z.B. Chrome, Firefox)
-- Installation und Einrichtung
+### Appointment Creation
+- Users can create new appointments with details such as title, location, description, duration, and votable dates.
 
-## Ausführung
+### Appointment Display
+- Appointments are displayed in a list with options to view more details, vote, and delete.
 
-- Stellen Sie sicher, dass PHP und MySQL auf Ihrem Server installiert und konfiguriert sind.
-- Starten Sie Ihren Apache- und MySQL-Server über Ihre Serververwaltungssoftware.
+### Voting on Appointments
+- Users can submit their preferences for appointment options by voting on various proposed times.
 
-### Datenbank einrichten:
+### Detailed View
+- Each appointment can be expanded to show additional information and voting options.
 
-- Erstellen Sie eine neue Datenbank namens appointmentfinder.
-- Importieren Sie das bereitgestellte SQL-Skript in Ihre Datenbank, um die erforderlichen Tabellen zu erstellen.
+### Deletion Function
+- Appointments can be removed from the list.
 
-### Projekt konfigurieren:
+## Requirements
+- PHP Server (e.g., XAMPP, WAMP, LAMP)
+- MySQL Database Server
+- Web Browser (e.g., Chrome, Firefox)
 
-- Klone oder lade das Projekt in das Wurzelverzeichnis deines Webservers herunter.
-- Öffne die DB.php-Datei und aktualisiere die Datenbankverbindungseinstellungen entsprechend deiner Serverkonfiguration.
+## Installation and Setup
 
-### Anwendung starten:
+### Database Setup
 
-- Öffne einen Webbrowser und navigiere zur Startseite der Anwendung (z.B. http://localhost/DeinProjektverzeichnis/).
+1. Ensure PHP and MySQL are installed and configured on your server.
+2. Start your Apache and MySQL server using your server management software.
+3. Create a new database named `appointmentfinder`.
+4. Import the provided SQL script into your database to create the required tables.
 
-## Nutzung
-- Neuen Termin erstellen: Klicken Sie auf die Schaltfläche "Neuen Termin erstellen" und füllen Sie das Formular mit den erforderlichen Termininformationen aus.
-- Termine ansehen: Die Startseite zeigt alle erstellten Termine in einer Liste an.
-- Details ansehen und abstimmen: Klicken Sie auf einen Termin, um Details anzuzeigen und Ihre Stimme für verfügbare Termine abzugeben.
-- Termin löschen: Klicken Sie auf das Löschsymbol neben einem Termin, um ihn zu entfernen.
+### Project Configuration
+
+1. Clone or download the project into the root directory of your web server.
+2. Open the `DB.php` file and update the database connection settings according to your server configuration.
+
+### Running the Application
+
+1. Open a web browser and navigate to the home page of the application (e.g., `http://localhost/YourProjectDirectory/`).
+
+## Usage
+
+### Creating a New Appointment
+
+1. Click the "Create New Appointment" button.
+2. Fill out the form with the required appointment information.
+
+### Viewing Appointments
+
+- The home page displays all created appointments in a list.
+
+### Viewing Details and Voting
+
+1. Click on an appointment to view details.
+2. Submit your vote for available times.
+
+### Deleting an Appointment
+
+- Click the delete icon next to an appointment to remove it.
